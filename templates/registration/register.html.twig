@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+    <style>
+        body {
+            background-color: #f4f4f4;
+            padding-top: 20px;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .error{
+            color:red;
+            display: block;
+            padding: 5px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .form-check-input {
+            margin-right: 5px !important;
+        }
+        
+    </style>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 mt-0">
+                <h1 class="text-center mb-4">Registro</h1>
+
+                {{ form_errors(registrationForm) }}
+
+                {{ form_start(registrationForm, {'attr': {'class': 'needs-validation'}}) }}
+                    <div class="mb-3">
+                        {{ form_row(registrationForm.username, {'attr': {'class': 'form-control', 'placeholder': 'Nombre de Usuario'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(registrationForm.password, {'attr': {'class': 'form-control', 'placeholder': 'Contraseña'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'Correo Electrónico'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(registrationForm.foto, {'attr': {'class': 'form-control', 'placeholder': 'URL de la Foto'}}) }}
+                    </div>
+                    <div class="form-check mb-3">
+                        {{ form_label(registrationForm.agreeTerms, 'Acepto los términos y condiciones', {'label_attr': {'class': 'ml-2 form-check-label'}}) }}
+                        {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
+                    </div>
+                    <button type="submit" class="btn btn-warning">Registrar</button>
+                {{ form_end(registrationForm) }}
+
+                <p class="text-center mt-3">¿Ya tienes cuenta? <a href="{{ path('app_login') }}">Inicia Sesión</a></p>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

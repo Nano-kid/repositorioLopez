@@ -1,0 +1,23 @@
+{% block body %}
+    {% if productoM  is defined %}
+        <h2>Modificar Producto</h2>
+    {% else %}
+        <h2>Agregar Producto</h2>
+    {% endif %}
+    
+    {{ form_start(formulario) }}
+        {{ form_row(formulario.nombre) }}
+        {{ form_row(formulario.descripcion) }}
+        {{ form_row(formulario.precio) }}
+        {{ form_row(formulario.descuento) }}
+        {{ form_row(formulario.categoria) }}
+        {{ form_row(formulario.foto) }}
+        
+        {% if productoM  is defined %}
+            <button type="submit" class="btn">Modificar Producto</button>
+        {% else %}
+            <button type="submit" class="btn">Agregar Producto</button>
+        {% endif %}
+    {{ form_end(formulario) }}
+    <a href="{{path('app_producto')}}">Volver</a>
+{% endblock %}

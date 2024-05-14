@@ -1,0 +1,191 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<style>
+    header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 1% 2%;
+        padding-bottom: 2%;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .producto{
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .titulo{
+        font-size: 1.25rem;
+        color:black;
+    }
+
+    .carousel-item img {
+        width: 100%; /* Ajusta el ancho según sea necesario */
+        height: 400px; /* Altura fija para todas las imágenes */
+        object-fit: cover; /* Escala la imagen para llenar el contenedor */
+    }
+
+    .producto .card-img-top {
+        width: 100%; /* Ajusta el ancho según sea necesario */
+        height: 200px; /* Altura fija para todas las imágenes */
+        object-fit: cover; /* Escala la imagen para llenar el contenedor */
+    }
+
+    .img-usuario{
+        height:30px; 
+        width:30px; 
+        object-fit: cover;
+    }
+
+    .img-usuario-mensaje{
+        height:35px; 
+        width:35px; 
+        object-fit: cover;
+    }
+    
+    
+</style>
+<header class="bg-warning">
+    <h2>Pagina Prueba</h2>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <a class="navbar-brand d-none d-lg-block" href="{{ path('app_producto')}}">Inicio</a>
+                <li class="nav-item d-block d-lg-none">
+                    <a class="nav-link titulo"  href="{{ path('app_producto')}}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Categorias</a>
+                </li>
+                {% if usuario == null %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_login') }}">Iniciar Sesion</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <p style="display: inline"><img src="{{ asset('imagenesUsuario/' ~ usuario.foto.nombre) }}" class="rounded-circle img-usuario">{{usuario.email}}</p>
+                        </a>
+
+                        <ul class="dropdown-menu">
+                            {% if usuario.rol == "Administrador" %}
+                                <li><a class="dropdown-item" href="{{ path('app_agregarProducto') }}">Agregar Producto</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_agregarCategoria') }}">Agregar Categoria</a></li>
+                            {% elseif usuario.rol == "Cliente" %}
+                                <li><a class="dropdown-item" href="">Carrito</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Cerrar Sesion</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+                </li>
+            </ul>
+            <form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-dark" type="submit">Search</button>
+            </form>
+            </div>
+        </div>
+    </nav> 
+</header>
+
+<div class="container mt-5 mb-3">
+    <div class="row">
+        <div class="col-md-7">
+            <div id="carouselExampleFade" class="carousel slide carousel-fade">
+                <div class="carousel-inner">
+                    {% for foto in producto.fotos %}
+                        <div class="carousel-item {% if loop.first %}active{% endif %}">
+                            <img src="{{ asset('imagenesProductos/' ~ foto.nombre) }}" class="producto d-block w-100 rounded-4" alt="...">
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if producto.fotos|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                {% endif %}
+            </div>
+        
+            <!-- Formulario para agregar comentario -->
+            <div class="row mt-5">
+                <div class="col-md-12">
+                    <h3>Agregar Comentario</h3>
+                    {{ form_start(formulario, {'attr': {'class': 'mb-3'}}) }}
+                        {{ form_row(formulario.contenido, {'attr': {'class': 'form-control', 'rows': 3, 'required': true}}) }}
+                        <button type="submit" class="btn btn-primary mt-2">Enviar</button>
+                    {{ form_end(formulario) }}
+                </div>
+            
+                <div class="col-md-12 mb-3">
+                    <h3>Comentarios de los Compradores</h3>
+                    <ul class="list-group">
+                        {% for mensaje in producto.mensajes %}
+                            <!--<li class="list-group-item">
+                                <div class="ml-3">
+                                    <p>
+                                        <img src="{{ asset('imagenesUsuario/' ~ mensaje.usuario.foto.nombre) }}" class="rounded-circle img-usuario-mensaje">
+                                        {{ mensaje.usuario.email }} 
+                                        <span class="d-block">{{ mensaje.fecha|date('Y-m-d') }}</span>
+                                    </p>
+                                </div>
+                                {{ mensaje.contenido }}
+                            </li>-->
+                            <li class="list-group-item">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="col-auto px-1">
+                                        <img src="{{ asset('imagenesUsuario/' ~ mensaje.usuario.foto.nombre) }}" class="rounded-circle img-usuario-mensaje mt-1">
+                                    </div>
+                                    <div class="col">
+                                        {{ mensaje.usuario.email }}
+                                        <span class="d-block">{{ mensaje.fecha|date('Y-m-d') }}<span>
+                                    </div>
+                                </div>
+                                {{ mensaje.contenido }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ producto.nombre }}</h3>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Precio: {{ producto.precio }}€</h5>
+                    <p class="card-text">{{ producto.descripcion }}</p>
+                    <button type="button" class="btn btn-warning">Añadir al pedido</button>
+                </div>
+            </div>
+
+            <hr>
+            <h3>Productos Relacionados</h3>
+
+            {% for producto in productosRelacionados %}
+                <div class="col-md-12">
+                    <div class="producto card mb-3">
+                        <a href="{{ path('app_verProducto', {id: producto.id}) }}"><img src="{{ asset('imagenesProductos/' ~ producto.fotos[0].nombre) }}" class="card-img-top" alt="..."></a>
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="{{ path('app_verProducto', {id: producto.id}) }}">{{producto.nombre}}</a></h5>
+                            <p class="card-text descripcion-limitada">{{producto.descripcion}}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>        
+    </div>
+</div>
+{% endblock %}

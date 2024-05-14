@@ -1,0 +1,8 @@
+{% block body %}
+    {{ form_start(formulario) }}
+        {{ form_row(formulario.nombre) }}
+
+        <button type="submit" class="btn">Agregar Categoria</button>
+    {{ form_end(formulario) }}
+    <a href="{{path('app_producto')}}">Volver</a>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <style>
+        body {
+            background-color: #f4f4f4;
+            padding-top: 20px;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px; /* Añadido para separación entre formularios */
+        }
+
+        .error {
+            color: red;
+            display: block;
+            padding: 5px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .form-check-input {
+            margin-right: 5px !important;
+        }
+        
+    </style>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 mt-0">
+                <h1 class="text-center mb-4">Iniciar Sesión</h1>
+
+                <form method="post">
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                    {% endif %}
+
+                    {% if app.user %}
+                        <div class="mb-3">
+                            You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="username">Username</label>
+                        <input type="text" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="username" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password">Password</label>
+                        <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
+                    </div>
+
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="_remember_me" id="remember_me" class="form-check-input">
+                        <label for="remember_me" class="form-check-label">Recuérdame</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning">Iniciar Sesión</button>
+                </form>
+
+                <p class="text-center mt-3">¿Todavía no tienes cuenta? <a href="{{ path('app_register') }}">Regístrate</a></p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
