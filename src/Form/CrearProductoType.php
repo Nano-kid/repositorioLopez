@@ -9,11 +9,14 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\PercentType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\File;
+
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
 class CrearProductoType extends AbstractType
 {
@@ -27,7 +30,7 @@ class CrearProductoType extends AbstractType
                     ]),
                 ]
             ])
-            ->add('descripcion', TextType::class, [
+            ->add('descripcion', TextareaType::class, [
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Debes introducir una descripcion para el producto',
@@ -40,38 +43,54 @@ class CrearProductoType extends AbstractType
                     'step' => '0.05',
                 ],
             ])
+            ->add('unidadVenta', ChoiceType::class, [
+                'choices' => [
+                    'Unidad' => 'unidad',
+                    'Cantidad' => 'Cantidad',
+                ],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Debes seleccionar la unidad de venta para el producto',
+                    ]),
+                ],
+                'placeholder' => 'Selecciona una opción',
+                'empty_data' => null,
+            ])
             ->add('descuento', PercentType::class, [
                 'required' => false,
-                'type' => 'integer', // Define el tipo de valor interno 
+                'symbol' => false,
+                'type' => 'integer',
                 'attr' => [
-                    'min' => 0, // Valor mínimo permitido
-                    'max' => 100, // Valor máximo permitido
+                    'min' => 0,
+                    'max' => 100,
                 ],
             ])
             ->add('categoria', EntityType::class, [
                 'class' => Categoria::class,
                 'choice_label' => 'nombre',
-            ])
-            ->add('foto', FileType::class, [
-                'label' => 'Foto',
-                'mapped' => false,
-                //'required' => true,seria otra forma de indicar que es obligatorio 
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Por favor, seleccione una foto',
-                    ]),
-                    new File([
-                        'maxSize' => '1024k',
-                        'mimeTypes' => [
-                            'image/jpeg',
-                            'image/jpg',
-                            'image/png',
-                            'image/gif'
-                        ],
-                        'mimeTypesMessage' => 'Por favor sube un archivo JPEG válido',
-                    ]),
-                ],
-            ])
+            ]);
+
+            if ($options['is_image_required']) {
+                $builder->add('foto', FileType::class, [
+                    'label' => 'Foto',
+                    'mapped' => false,
+                    'constraints' => [
+                        new NotBlank([
+                            'message' => 'Por favor, seleccione una foto',
+                        ]),
+                        new File([
+                            'maxSize' => '1024k',
+                            'mimeTypes' => [
+                                'image/jpeg',
+                                'image/jpg',
+                                'image/png',
+                                'image/gif'
+                            ],
+                            'mimeTypesMessage' => 'Por favor sube un archivo JPEG/JPG/PNG/GIF válido',
+                        ]),
+                    ],
+                ]);
+            }
         ;
     }
 
@@ -79,6 +98,8 @@ class CrearProductoType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Producto::class,
+            'is_image_required' => false,
         ]);
     }
 }
+

@@ -1,0 +1,222 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<style>
+    .carousel-item img {
+        width: 100%; /* Ajusta el ancho según sea necesario */
+        height: 400px; /* Altura fija para todas las imágenes */
+        object-fit: cover; /* Escala la imagen para llenar el contenedor */
+    }
+
+    .producto-img, .añadirImagen {
+        width: 100%; /* Ajusta el ancho según sea necesario */
+        height: 90px; /* Altura fija para todas las imágenes */
+        object-fit: cover; /* Escala la imagen para llenar el contenedor */
+        border: 1px solid #ddd; /* Borde */
+        border-radius: 10px; /* Bordes redondeados */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
+        cursor: pointer; /* Cursor de mano para indicar que es clickeable */
+        transition: transform 0.3s; /* Efecto de transición */
+    }
+
+    .producto-img:hover {
+        transform: scale(1.05); /* Efecto de hover */
+    }
+
+    .fotos {
+        display: flex; /* Usar flexbox para alinear los elementos en una fila */
+        flex-wrap: wrap; /* Permite que los elementos se envuelvan en múltiples líneas */
+        gap: 1rem; /* Espacio entre los elementos */
+        justify-content: center;
+    }
+
+    #foto {
+        position: relative;
+    }
+
+    .papelera {
+        position: absolute;
+        color: black;
+        top: 7px;
+        right: 10px;
+        cursor: pointer;
+        transition: color 0.4s;
+    }
+
+    .papelera:hover {
+        color: #ffc107;
+    }
+</style>
+
+<div class="container mt-4 mb-4">
+    <h2 class="mb-3 text-center">Gestión de Fotos ({{ producto.nombre }})</h2>
+    <div id="carouselFotos" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for foto in fotos %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <img src="{{ asset('imagenesProductos/' ~ foto.nombre) }}" class="d-block w-100" alt="...">
+                </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselFotos" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselFotos" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+    <hr>
+
+    <div class="row mt-4">
+        <div class="fotos">
+            {% for foto in fotos %}
+                <div class="col-2" id="foto">
+                    <img src="{{ asset('imagenesProductos/' ~ foto.nombre) }}" class="producto-img" alt="...">
+                    <i class="fa-solid fa-trash papelera" data-idFoto="{{ foto.id }}" onclick="borrarFoto(this, {{ loop.index0 }})"></i>
+                </div>
+            {% endfor %}
+            <div class="col-2 divBoton">
+                <button class="añadirImagen btn btn-warning" data-idProducto="{{ producto.id }}">+</button>
+                <input type="file" style="display: none;" id="inputImagen">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function setActiveCarouselItem(index) {
+            const carouselItems = document.querySelectorAll('#carouselFotos .carousel-item');
+            carouselItems.forEach(item => item.classList.remove('active'));
+            if (carouselItems[index - 1]) { // Verificar que el índice exista
+                carouselItems[index - 1].classList.add('active');
+            } else if (carouselItems.length > 0) { // En caso de que el índice no exista, activar el primero si hay elementos
+                carouselItems[0].classList.add('active');
+            }
+        }
+
+        function borrarFoto(element, index) {
+            const idFoto = element.getAttribute('data-idFoto');
+            const formData = new FormData();
+            formData.append('idFoto', idFoto);
+
+            fetch('/eliminarFoto', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Eliminar la imagen de la galería
+                        element.parentElement.remove();
+
+                        // Eliminar la foto correspondiente del carrusel
+                        const carouselItems = document.querySelectorAll('#carouselFotos .carousel-item');
+                        const isActive = carouselItems[index]?.classList.contains('active');
+                        if (carouselItems[index]) {
+                            carouselItems[index].remove();
+                        }
+
+                        // Si la foto eliminada era la activa, activar la siguiente
+                        if (isActive) {
+                            let nextIndex = index;
+                            if (nextIndex >= carouselItems.length) {
+                                nextIndex = carouselItems.length - 1;
+                            }
+                            setActiveCarouselItem(nextIndex + 1);
+                        }
+
+                        // Actualizar el índice de las fotos restantes
+                        document.querySelectorAll('.producto-img').forEach((img, idx) => {
+                            img.setAttribute('onclick', `setActiveCarouselItem(${idx + 1})`);
+                        });
+
+                        document.querySelectorAll('.papelera').forEach((papelera, idx) => {
+                            papelera.setAttribute('onclick', `borrarFoto(this, ${idx})`);
+                        });
+                    } else {
+                        alert('Error al eliminar la imagen');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.producto-img').forEach((ProdImg, index) => {
+                ProdImg.addEventListener('click', () => {
+                    setActiveCarouselItem(index + 1); // Ajustamos el índice para la función
+                });
+            });
+
+            let btnAddImg = document.querySelector('.añadirImagen');
+            btnAddImg.addEventListener('click', function() {
+                document.getElementById('inputImagen').click();
+            });
+
+            let inputImagen = document.getElementById('inputImagen');
+            inputImagen.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const idProducto = btnAddImg.getAttribute('data-idProducto');
+
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('imagen', file);
+                    formData.append('idProducto', idProducto);
+
+                    fetch('/agregarFoto', {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const nuevaImagen = document.createElement('img');
+                                nuevaImagen.src = '/imagenesProductos/' + data.foto;
+                                nuevaImagen.classList.add('producto-img');
+                                nuevaImagen.alt = 'Nueva imagen';
+                                nuevaImagen.setAttribute('onclick', `setActiveCarouselItem(${document.querySelectorAll('.producto-img').length + 1})`);
+
+                                // Añado la nueva imagen
+                                const galeria = document.querySelector('.fotos');
+                                const nuevoDiv = document.createElement('div');
+                                nuevoDiv.classList.add('col-2');
+                                nuevoDiv.setAttribute('id', 'foto');
+                                nuevoDiv.appendChild(nuevaImagen);
+
+                                const papelera = document.createElement('i');
+                                papelera.classList.add('fa-solid', 'fa-trash', 'papelera');
+                                papelera.setAttribute("data-idFoto", data.idFoto);
+                                papelera.setAttribute('onclick', `borrarFoto(this, ${document.querySelectorAll('.producto-img').length})`);
+                                nuevoDiv.appendChild(papelera);
+
+                                galeria.insertBefore(nuevoDiv, document.querySelector('.divBoton'));
+
+                                // Añado también la imagen al carrusel de imágenes
+                                const nuevoElementoCarrusel = document.createElement('div');
+                                nuevoElementoCarrusel.classList.add('carousel-item');
+                                const imgCarrusel = document.createElement('img');
+                                imgCarrusel.src = '/imagenesProductos/' + data.foto;
+                                imgCarrusel.classList.add('d-block', 'w-100');
+                                nuevoElementoCarrusel.appendChild(imgCarrusel);
+                                document.querySelector('.carousel-inner').appendChild(nuevoElementoCarrusel);
+
+                                // Marco la nueva imagen como la última en el carrusel
+                                document.querySelectorAll('.carousel-item').forEach(item => item.classList.remove('active'));
+                                nuevoElementoCarrusel.classList.add('active');
+                            } else {
+                                alert('Error al subir la imagen');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                }
+            });
+        });
+    </script>
+{% endblock %}

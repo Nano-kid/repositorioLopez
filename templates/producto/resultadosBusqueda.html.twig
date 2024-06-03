@@ -1,4 +1,8 @@
+{# templates/producto/resultadosBusqueda.html.twig #}
 {% extends 'base.html.twig' %}
+
+{% block title %}Resultados de la búsqueda{% endblock %}
+
 {% block body %}
 <style>
     header {
@@ -23,6 +27,7 @@
         object-fit: cover; /* Escala la imagen para llenar el contenedor */
     }
 
+    /* CSS personalizado */
     .descripcion-limitada {
         max-height: 72px; /* Altura máxima de la descripción */
         overflow: hidden; /* Oculta cualquier texto que sobresalga */
@@ -34,7 +39,6 @@
         width:30px; 
         object-fit: cover;
     }
-
 </style>
 
 <header class="bg-warning">
@@ -110,10 +114,6 @@
         <div class="row">
             {% for categoria in categorias %}
                 <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
-                    <!--<form action="{{ path('app_categoria') }}" method="POST" style="display: inline;">
-                        <input type="hidden" name="categoria" value="{{ categoria.id }}">
-                        <button type="submit" class="btn btn-link link-warning link-opacity-75-hover link-underline link-underline-opacity-0 p-0">{{ categoria.nombre }}</button>
-                    </form>-->
                     <a href="{{ path('app_categoria', {id: categoria.id}) }}" class="link-warning link-opacity-75-hover link-underline link-underline-opacity-0">{{ categoria.nombre }}</a>
                 </div>
             {% endfor %}
@@ -121,28 +121,37 @@
     </div>
 </div>
 
-
-<div class="container mt-4">
-    <div class="row">
-        {% for producto in productos %}
-            <div class="col-md-4">
-                <div class="producto card mb-3">
-                    <a href="{{ path('app_verProducto', {id: producto.id}) }}"><img src="./imagenesProductos/{{ producto.fotos[0].nombre }}" class="card-img-top" alt="..."></a>
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="{{ path('app_verProducto', {id: producto.id}) }}">{{producto.nombre}}</a></h5>
-                        <p class="card-text descripcion-limitada">{{producto.descripcion}}</p>
-                    </div>
-                    <div class="card-body">
-                        <a href="{{ path('app_verProducto', {id: producto.id}) }}" class="btn btn-warning">Ver Producto</a>
-                        <!--{% if usuario != null and usuario.rol == "Administrador" %}
-                            <a href="{{ path('app_modificarProducto', {id: producto.id}) }}" class="btn btn-warning">Modificar Producto</a>
-                        {% else %}
-                            <button type="button" class="btn btn-warning">Añadir al pedido</button>
-                        {% endif %}-->
+<div class="container mt-3">
+    <h3 class="mb-3">Resultados de la búsqueda para "{{ query }}"</h3>
+        
+    {% if productos is not empty %}
+        <div class="row">
+            {% for producto in productos %}
+                <div class="col-md-4">
+                    <div class="producto card mb-3">
+                        <a href="{{ path('app_verProducto', {id: producto.id}) }}">
+                            <img src="./imagenesProductos/{{ producto.fotos[0].nombre }}" class="card-img-top" alt="...">
+                        </a>
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{{ path('app_verProducto', {id: producto.id}) }}">{{ producto.nombre }}</a>
+                            </h5>
+                            <p class="card-text descripcion-limitada">{{ producto.descripcion }}</p>
+                        </div>
+                        <div class="card-body">
+                            <a href="{{ path('app_verProducto', {id: producto.id}) }}" class="btn btn-warning">Ver Producto</a>
+                            <!--{% if usuario != null and usuario.rol == "Administrador" %}
+                                <a href="{{ path('app_modificarProducto', {id: producto.id}) }}" class="btn btn-warning">Modificar Producto</a>
+                            {% else %}
+                                <button type="button" class="btn btn-warning">Añadir al pedido</button>
+                            {% endif %}-->
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
-    </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No se encontraron productos que coincidan con tu búsqueda.</p>
+    {% endif %}
 </div>
 {% endblock %}

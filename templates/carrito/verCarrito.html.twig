@@ -1,0 +1,189 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<style>
+    header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 1% 2%;
+        padding-bottom: 2%;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .producto{
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .titulo{
+        font-size: 1.25rem;
+        color:black;
+    }
+
+    .carousel-item img {
+        width: 100%; /* Ajusta el ancho según sea necesario */
+        height: 400px; /* Altura fija para todas las imágenes */
+        object-fit: cover; /* Escala la imagen para llenar el contenedor */
+    }
+
+    .producto .card-img-top {
+        width: 100%; /* Ajusta el ancho según sea necesario */
+        height: 200px; /* Altura fija para todas las imágenes */
+        object-fit: cover; /* Escala la imagen para llenar el contenedor */
+    }
+
+    .img-usuario{
+        height:30px; 
+        width:30px; 
+        object-fit: cover;
+    }
+
+    .img-usuario-mensaje{
+        height:35px; 
+        width:35px; 
+        object-fit: cover;
+    }
+
+    .p-msg{
+        padding-top: 6px;
+        padding-left: 12px;
+        padding-bottom: 11px;
+    }
+
+    .p-img {
+        height: 100%;
+        object-fit: cover; /* Escala la imagen para llenar el contenedor */
+    }
+    
+    .pagination .page-link {
+        color: #000 !important; /* Color Warning de Bootstrap*/
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--bs-warning) !important;
+        border-color: var(--bs-warning) !important;
+        color: #000 !important; /* Black text */
+    }
+
+    .pagination .page-link:hover {
+        background-color: var(--bs-warning) !important;
+        color: #000 !important; /* Hover texto negro*/
+    }
+</style>
+<header class="bg-warning">
+    <h2>Pagina Prueba</h2>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <a class="navbar-brand d-none d-lg-block" href="{{ path('app_producto')}}">Inicio</a>
+                <li class="nav-item d-block d-lg-none">
+                    <a class="nav-link titulo"  href="{{ path('app_producto')}}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Categorias</a>
+                </li>
+                {% if usuario == null %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_login') }}">Iniciar Sesion</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <p style="display: inline"><img src="{{ asset('imagenesUsuario/' ~ usuario.foto.nombre) }}" class="rounded-circle img-usuario">{{usuario.email}}</p>
+                        </a>
+
+                        <ul class="dropdown-menu">
+                            {% if usuario.rol == "Administrador" %}
+                                <li><a class="dropdown-item" href="{{ path('app_agregarProducto') }}">Agregar Producto</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_agregarCategoria') }}">Agregar Categoria</a></li>
+                            {% elseif usuario.rol == "Cliente" %}
+                                <li><a class="dropdown-item" href="">Carrito</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Cerrar Sesion</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+                </li>
+            </ul>
+            <form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-dark" type="submit">Search</button>
+            </form>
+            </div>
+        </div>
+    </nav> 
+</header>
+
+<div class="container mt-5 mb-3">
+    {% if carrito is not empty %}
+        <div class="d-flex flex-wrap justify-content-center">
+            {% for lineaVenta in carrito %}
+                <div class="card mb-3 producto" style="max-width: 560px;">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            <img src="{{ asset('imagenesProductos/' ~ lineaVenta.producto.fotos[0].nombre) }}" class="img-fluid rounded-start p-img" alt="...">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h5 class="card-title">{{lineaVenta.producto.nombre}}</h5>
+                                <p class="card-text">
+                                    {% if lineaVenta.producto.unidadVenta == "Cantidad" %}
+                                        Cantidad(Kg): {{lineaVenta.cantidad}}
+                                    {% elseif  lineaVenta.producto.unidadVenta == "Unidad" %}
+                                        Unidad/es: {{lineaVenta.cantidad}}
+                                    {% endif %}
+
+                                    {% if lineaVenta.producto.descuento != 0 or lineaVenta.producto.descuento != null %}
+                                        - Precio: <s>{{lineaVenta.producto.precio}}€</s> - {{lineaVenta.producto.precio - (lineaVenta.producto.precio * (lineaVenta.producto.descuento/100))}}€
+                                    {% else %}
+                                        - Precio: {{lineaVenta.producto.precio}}€
+                                    {% endif %}
+                                </p>
+                                {% if lineaVenta.producto.descuento != 0 or lineaVenta.producto.descuento != null %}
+                                    <p class="card-text"><b>Descuento: {{lineaVenta.producto.descuento}}% - Total: <s>{{lineaVenta.producto.precio * lineaVenta.cantidad}}€</s> - {{lineaVenta.total}}€</b></p><hr>
+                                {% else %}
+                                    <p class="card-text"><b>Total: {{lineaVenta.total}}€ </b></p><hr>
+                                {% endif %}
+
+                                <button type="button" class="btn btn-warning">Modificar</button>
+                                <a href="{{ path('app_quitarDelCarrito', {'indexVenta': loop.index0, 'paginaActual': paginaActual}) }}" class="btn btn-danger">Eliminar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% if numPaginas > 1 %}
+            <div class="d-flex justify-content-center mt-4">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        <li class="page-item {{ paginaActual == 1 ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ path('app_carrito', {'paginaActual': paginaActual - 1}) }}">Previous</a>
+                        </li>
+                        {% for i in 1..numPaginas %}
+                            <li class="page-item {{ paginaActual == i ? 'active' : '' }}">
+                                <a class="page-link " href="{{ path('app_carrito', {'paginaActual': i}) }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+                        <li class="page-item {{ paginaActual == numPaginas ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ path('app_carrito', {'paginaActual': paginaActual + 1}) }}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+        <hr>
+        <div class="mt-3 text-center">
+            <h3>Subtotal: {{ total }}€</h3>
+            <form method="post" action="{{ path('app_confirmarPedido') }}">
+                <button type="submit" class="btn btn-warning">Confirmar Pedido</button>
+            </form>
+        </div>
+    {% else %}
+        <p class="text-center">El carrito está vacío.</p>
+    {% endif %}
+</div>
+{% endblock %}

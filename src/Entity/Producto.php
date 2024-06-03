@@ -18,8 +18,11 @@ class Producto
     #[ORM\Column(length: 255)]
     private ?string $nombre = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 1000)]
     private ?string $descripcion = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $unidadVenta = null;
 
     #[ORM\Column]
     private ?float $precio = null;
@@ -207,6 +210,18 @@ class Producto
                 $mensaje->setProducto(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUnidadVenta(): ?string
+    {
+        return $this->unidadVenta;
+    }
+
+    public function setUnidadVenta(string $unidadVenta): static
+    {
+        $this->unidadVenta = $unidadVenta;
 
         return $this;
     }

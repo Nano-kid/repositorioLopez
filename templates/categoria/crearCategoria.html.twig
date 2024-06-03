@@ -1,8 +1,140 @@
+{% extends 'base.html.twig' %}
 {% block body %}
-    {{ form_start(formulario) }}
-        {{ form_row(formulario.nombre) }}
+    <style>
+        body {
+            background-color: #f4f4f4;
+            padding-top: 20px;
+        }
 
-        <button type="submit" class="btn">Agregar Categoria</button>
-    {{ form_end(formulario) }}
-    <a href="{{path('app_producto')}}">Volver</a>
+        .formModificado {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px; /* Añadido para separación entre formularios */
+        }
+
+        .error {
+            color: red;
+            display: block;
+            padding: 5px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .form-check-input {
+            margin-right: 5px !important;
+        }
+
+        .table-rounded {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+    </style>
+
+    {% block javascripts %}
+        {{ parent() }}
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            function mostrarModalModificar(id) {
+                $.ajax({
+                    url: '/modificarCategoria/' + id,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log(response);
+                        $('#formularioModificar #crear_categoria_nombre').val(response.nombre);
+                        console.log(response.nombre);
+                        $('#formularioModificar').attr('action', '/modificarCategoria/' + id);
+                        $('#modalModificar').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+
+            /*function guardarCambiosCategoria() {
+                var formData = $('#formularioModificar').serialize();
+                $.ajax({
+                    url: $('#formularioModificar').attr('action'),
+                    method: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        $('#modalModificar').modal('hide');
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            }*/
+        </script>
+    {% endblock %}
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 mt-0">
+                <h1 class="text-center mb-3">Agregar Categoría</h1>
+                {{ form_start(formulario, {'attr': {'class': 'formModificado'}}) }}
+                    <div class="mb-3">
+                        {{ form_row(formulario.nombre, {'attr': {'class': 'form-control', 'placeholder': 'Nombre de la categoría'}}) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-warning">Agregar Categoría</button>
+                    <a href="{{ path('app_producto') }}" class="btn btn-secondary">Volver</a>
+                {{ form_end(formulario) }}
+            </div>
+        </div>
+
+        {% if categorias is not empty %}
+            <table class="table table-hover table-rounded mt-5">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for categoria in categorias %}
+                        <tr>
+                            <td>{{ categoria.id }}</td>
+                            <td>{{ categoria.nombre }}</td>
+                            <td>
+                                <button type="button" class="btn btn-warning" onclick="mostrarModalModificar({{ categoria.id }})">
+                                    Modificar
+                                </button>
+                                <a href="{{ path('app_eliminarCategoria', {id: categoria.id}) }}" class="btn btn-danger">Eliminar</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="container mt-4 text-center">Todavía no hay categorías.</p>
+        {% endif %}
+    </div>
+
+    <div class="modal fade" id="modalModificar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modificar Categoria</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                {{ form_start(formularioModificar, {'attr': {'id': 'formularioModificar'}}) }}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        {{ form_row(formularioModificar.nombre, {'attr': {'class': 'form-control', 'placeholder': 'Nombre de la categoría'  }}) }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning">Modificar Categoría</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+                {{ form_end(formularioModificar) }}
+            </div>
+        </div>
+    </div>
 {% endblock %}

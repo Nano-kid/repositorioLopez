@@ -25,7 +25,7 @@ class Pedido
     /**
      * @var Collection<int, LineasVenta>
      */
-    #[ORM\OneToMany(targetEntity: LineasVenta::class, mappedBy: 'Pedido', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: LineasVenta::class, mappedBy: 'pedido', orphanRemoval: true, cascade: ['persist', 'remove'])]
     private Collection $lineasVentas;
 
     public function __construct()

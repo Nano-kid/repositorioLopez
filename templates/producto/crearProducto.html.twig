@@ -1,23 +1,85 @@
-{% block body %}
-    {% if productoM  is defined %}
-        <h2>Modificar Producto</h2>
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {% if productoM is defined %}
+        Modificar Producto
     {% else %}
-        <h2>Agregar Producto</h2>
+        Agregar Producto
     {% endif %}
-    
-    {{ form_start(formulario) }}
-        {{ form_row(formulario.nombre) }}
-        {{ form_row(formulario.descripcion) }}
-        {{ form_row(formulario.precio) }}
-        {{ form_row(formulario.descuento) }}
-        {{ form_row(formulario.categoria) }}
-        {{ form_row(formulario.foto) }}
-        
-        {% if productoM  is defined %}
-            <button type="submit" class="btn">Modificar Producto</button>
-        {% else %}
-            <button type="submit" class="btn">Agregar Producto</button>
-        {% endif %}
-    {{ form_end(formulario) }}
-    <a href="{{path('app_producto')}}">Volver</a>
+{% endblock %}
+
+{% block body %}
+    <style>
+        body {
+            background-color: #f4f4f4;
+            padding-top: 20px;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .error {
+            color: red;
+            display: block;
+            padding: 5px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .form-check-input {
+            margin-right: 5px !important;
+        }
+    </style>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 mt-0">
+                {% if productoM is defined %}
+                    <h2 class="text-center mb-4">Modificar Producto</h2>
+                {% else %}
+                    <h2 class="text-center mb-4">Agregar Producto</h2>
+                {% endif %}
+
+                {{ form_start(formulario, {'attr': {'class': 'needs-validation'}}) }}
+                    <div class="mb-3">
+                        {{ form_row(formulario.nombre, {'attr': {'class': 'form-control', 'placeholder': 'Nombre del Producto'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(formulario.descripcion, {'attr': {'class': 'form-control', 'placeholder': 'Descripción'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(formulario.unidadVenta, {'attr': {'class': 'form-control', 'placeholder': 'Descripción'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(formulario.precio, {'attr': {'class': 'form-control', 'placeholder': 'Precio'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(formulario.descuento, {'attr': {'class': 'form-control', 'placeholder': 'Descuento'}}) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(formulario.categoria, {'attr': {'class': 'form-control', 'placeholder': 'Categoría'}}) }}
+                    </div>
+                    {% if producto is defined %}
+                        <div class="mb-3">
+                            {{ form_row(formulario.foto, {'attr': {'class': 'form-control', 'placeholder': 'Foto del Producto'}}) }}
+                        </div>
+                    {% endif %}
+                    
+                    {% if productoM is defined %}
+                        <button type="submit" class="btn btn-warning">Modificar Producto</button>
+                        <a href="{{ path('app_verProducto', {id: productoM.id}) }}" class="btn btn-secondary">Volver</a>
+                    {% else %}
+                        <button type="submit" class="btn btn-warning">Agregar Producto</button>
+                        <a href="{{ path('app_producto') }}" class="btn btn-secondary">Volver</a>
+                    {% endif %}
+
+                {{ form_end(formulario) }}
+
+            </div>
+        </div>
+    </div>
 {% endblock %}

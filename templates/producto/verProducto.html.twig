@@ -3,7 +3,6 @@
 <style>
     header {
         text-align: center;
-        margin-bottom: 20px;
         padding: 1% 2%;
         padding-bottom: 2%;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -41,9 +40,72 @@
         width:35px; 
         object-fit: cover;
     }
-    
-    
+
+    .p-msg{
+        padding-top: 6px;
+        padding-left: 12px;
+        padding-bottom: 11px;
+    }
+
+    .producto-img, .añadirImagen {
+        width: 100%; /* Ajusta el ancho según sea necesario */
+        height: 90px; /* Altura fija para todas las imágenes */
+        object-fit: cover; /* Escala la imagen para llenar el contenedor */
+        border: 1px solid #ddd; /* Borde */
+        border-radius: 10px; /* Bordes redondeados */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra */
+        cursor: pointer; /* Cursor de mano para indicar que es clickeable */
+        transition: transform 0.3s; /* Efecto de transición */
+    }
+
+    .producto-img:hover {
+        transform: scale(1.05); /* Efecto de hover */
+    }
+
+    .fotos {
+        display: flex; /* Usar flexbox para alinear los elementos en una fila */
+        flex-wrap: wrap; /* Permite que los elementos se envuelvan en múltiples líneas */
+        gap: 1rem; /* Espacio entre los elementos */
+        justify-content: center; /* Centra el contenido horizontalmente */
+    }
+
+    #foto {
+        position: relative;
+    }
+
+    .papelera {
+        position: absolute;
+        color: black;
+        top: 7px;
+        right: 10px;
+        cursor: pointer;
+        transition: color 0.4s;
+    }
+
+    .papelera:hover {
+        color: #ffc107;
+    }
+
+    /* CSS personalizado */
+    .descripcion-limitada {
+        max-height: 72px; /* Altura máxima de la descripción */
+        overflow: hidden; /* Oculta cualquier texto que sobresalga */
+        white-space: normal; /* Permite que el texto se divida en múltiples líneas */
+    }
+
+    .texto-truncado {
+        position: relative; /* Permitir que el contenido truncado sea relativo */
+    }
+
+    .texto-truncado::after {
+        content: '...'; /* Agrega puntos suspensivos */
+        position: absolute; /* Posiciona los puntos suspensivos */
+        bottom: 0; /* Alinea los puntos suspensivos al final */
+        right: 30px; /* Alinea los puntos suspensivos a la derecha */
+        background: white; /* Fondo para cubrir el texto truncado */
+    }
 </style>
+
 <header class="bg-warning">
     <h2>Pagina Prueba</h2>
     <nav class="navbar navbar-expand-lg">
@@ -58,7 +120,7 @@
                     <a class="nav-link titulo"  href="{{ path('app_producto')}}">Inicio</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Categorias</a>
+                    <a class="nav-link" href="#listaCategorias" data-bs-toggle="collapse" aria-expanded="false" aria-controls="listaCategorias">Categorías</a>
                 </li>
                 {% if usuario == null %}
                     <li class="nav-item">
@@ -75,7 +137,7 @@
                                 <li><a class="dropdown-item" href="{{ path('app_agregarProducto') }}">Agregar Producto</a></li>
                                 <li><a class="dropdown-item" href="{{ path('app_agregarCategoria') }}">Agregar Categoria</a></li>
                             {% elseif usuario.rol == "Cliente" %}
-                                <li><a class="dropdown-item" href="">Carrito</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_carrito') }}">Carrito</a></li>
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ path('app_logout') }}">Cerrar Sesion</a></li>
@@ -84,19 +146,38 @@
                 {% endif %}
                 </li>
             </ul>
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <form class="d-flex" role="search" action="{{ path('app_buscarProducto') }}" method="GET">
+                <input class="form-control me-2" type="search" name="query" placeholder="Search" aria-label="Search">
                 <button class="btn btn-outline-dark" type="submit">Search</button>
             </form>
+
+            <!--<form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-dark" type="submit">Search</button>
+            </form>-->
             </div>
         </div>
     </nav> 
 </header>
 
+<!-- Sección colapsable para las categorías -->
+<div class="collapse" id="listaCategorias">
+    <div class="bg-dark p-3">
+        <h5 class="text-light text-center">Categorías</h5>
+        <div class="row">
+            {% for categoria in categorias %}
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+                    <a href="{{ path('app_categoria', {id: categoria.id}) }}" class="link-warning link-opacity-75-hover link-underline link-underline-opacity-0">{{ categoria.nombre }}</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
 <div class="container mt-5 mb-3">
     <div class="row">
         <div class="col-md-7">
-            <div id="carouselExampleFade" class="carousel slide carousel-fade">
+            <div id="carouselFotos" class="carousel slide carousel-fade">
                 <div class="carousel-inner">
                     {% for foto in producto.fotos %}
                         <div class="carousel-item {% if loop.first %}active{% endif %}">
@@ -105,21 +186,44 @@
                     {% endfor %}
                 </div>
                 {% if producto.fotos|length > 1 %}
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev">
+                    <button class="carousel-control-prev" id="btnPrevious" type="button" data-bs-target="#carouselFotos" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
                     </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="next">
+                    <button class="carousel-control-next" id="btnNext" type="button" data-bs-target="#carouselFotos" data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Next</span>
                     </button>
                 {% endif %}
             </div>
+
+            {% if producto.fotos|length > 1  or (usuario != null and usuario.rol == "Administrador") %}
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="fotos">
+                            {% for foto in producto.fotos %}
+                                <div class="col-2" id="foto">
+                                    <img src="{{ asset('imagenesProductos/' ~ foto.nombre) }}" class="producto-img" alt="...">
+                                    {% if usuario != null and usuario.rol == "Administrador" %}
+                                        <i class="fa-solid fa-trash papelera" data-idFoto="{{ foto.id }}" onclick="borrarFoto(this, {{ loop.index0 }})"></i>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            {% if usuario != null and usuario.rol == "Administrador" %}
+                                <div class="col-2" id="divBoton">
+                                    <button class="añadirImagen btn btn-warning" data-idProducto="{{ producto.id }}">+</button>
+                                    <input type="file" style="display: none;" id="inputImagen">
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         
             <!-- Formulario para agregar comentario -->
-            <div class="row mt-5">
+            <div class="row mt-4">
                 <div class="col-md-12">
-                    <h3>Agregar Comentario</h3>
+                    <h3 class="mb-2">Agregar Comentario</h3>
                     {{ form_start(formulario, {'attr': {'class': 'mb-3'}}) }}
                         {{ form_row(formulario.contenido, {'attr': {'class': 'form-control', 'rows': 3, 'required': true}}) }}
                         <button type="submit" class="btn btn-primary mt-2">Enviar</button>
@@ -128,7 +232,7 @@
             
                 <div class="col-md-12 mb-3">
                     <h3>Comentarios de los Compradores</h3>
-                    <ul class="list-group">
+                    {% if producto.mensajes|length > 0 %}
                         {% for mensaje in producto.mensajes %}
                             <!--<li class="list-group-item">
                                 <div class="ml-3">
@@ -140,21 +244,22 @@
                                 </div>
                                 {{ mensaje.contenido }}
                             </li>-->
-                            <li class="list-group-item">
+                            <div class="mb-3 rounded border p-msg">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="col-auto px-1">
                                         <img src="{{ asset('imagenesUsuario/' ~ mensaje.usuario.foto.nombre) }}" class="rounded-circle img-usuario-mensaje mt-1">
                                     </div>
                                     <div class="col">
                                         {{ mensaje.usuario.email }}
-                                        <span class="d-block">{{ mensaje.fecha|date('Y-m-d') }}<span>
+                                        <span class="d-block">{{ mensaje.fecha|date('Y-m-d') }}</span>
                                     </div>
                                 </div>
                                 {{ mensaje.contenido }}
-                            </li>
+                            </div>
                         {% endfor %}
-                    </ul>
-                    
+                    {% elseif producto.mensajes|length == 0 %}
+                        <p>No hay mensajes todavia. Se el primero en comentar</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -167,7 +272,12 @@
                 <div class="card-body">
                     <h5 class="card-title">Precio: {{ producto.precio }}€</h5>
                     <p class="card-text">{{ producto.descripcion }}</p>
-                    <button type="button" class="btn btn-warning">Añadir al pedido</button>
+                    {% if usuario != null and usuario.rol == "Administrador" %}
+                        <a href="{{ path('app_modificarProducto', {id: producto.id}) }}" class="btn btn-warning">Modificar Producto</a>
+                        <a href="{{ path('app_eliminarProducto', {id: producto.id}) }}" class="btn btn-danger">Eliminar Producto</a>
+                    {% elseif usuario != null and usuario.rol == "Cliente" %}
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalCantidad">Añadir al Carrito</button>
+                    {% endif %}
                 </div>
             </div>
 
@@ -188,4 +298,207 @@
         </div>        
     </div>
 </div>
+
+<div class="modal fade" id="modalCantidad" tabindex="-1" aria-labelledby="modalCantidadLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modalCantidadLabel">Ingresar Cantidad</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            {{ form_start(formAgregarCarrito, {
+                'attr': {'id': 'formAgregarCarrito'},
+                'action': path('app_agregarAlCarrito', {'productoId': producto.id}),
+                'method': 'POST'
+            }) }}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        {% if producto.unidadVenta == "Cantidad" %}
+                            {{ form_row(formAgregarCarrito.cantidad, {'attr': {'class': 'form-control', 'placeholder': 'Ingresa una cantidad', 'step': 'any'}}) }}
+                        {% else %}
+                            {{ form_row(formAgregarCarrito.cantidad, {'attr': {'class': 'form-control', 'placeholder': 'Ingresa una cantidad', 'step': '1'}}) }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-warning">Añadir al Carrito</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            {{ form_end(formAgregarCarrito) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function setAddBtn() {
+            const maxFotos = 5;
+            const currentFotos = document.querySelectorAll('.producto-img').length;
+            const divBoton = document.getElementById('divBoton');
+
+            if (divBoton) {
+                if (currentFotos >= maxFotos) {
+                    divBoton.classList.add('d-none');
+                } else {
+                    divBoton.classList.remove('d-none');
+                }
+            }
+        }
+
+        function setCarruselBtns() {
+            const currentFotos = document.querySelectorAll('.producto-img').length;
+            const botonNext = document.getElementById('btnNext');
+            const botonPrevious = document.getElementById('btnPrevious');
+
+            if (botonNext || botonPrevious) {
+                if (currentFotos == 1) {
+                    botonNext.classList.add('d-none');
+                    botonPrevious.classList.add('d-none');
+                } else {
+                    botonNext.classList.remove('d-none');
+                    botonPrevious.classList.remove('d-none');
+                }
+            }
+        }
+
+        function setActiveCarouselItem(index) {
+            const carouselFotos = document.querySelectorAll('#carouselFotos .carousel-item');
+            carouselFotos.forEach(item => item.classList.remove('active'));
+            if (carouselFotos[index - 1]) { // Verificar que el índice exista
+                carouselFotos[index - 1].classList.add('active');
+            } else if (carouselFotos.length > 0) { // En caso de que el índice no exista, activar el primero si hay elementos
+                carouselFotos[0].classList.add('active');
+            }
+        }
+
+        function borrarFoto(element, index) {
+            const idFoto = element.getAttribute('data-idFoto');
+            const formData = new FormData();
+            formData.append('idFoto', idFoto);
+
+            fetch('/eliminarFoto', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Eliminar la imagen de la galería
+                        element.parentElement.remove();
+
+                        // Eliminar la foto correspondiente del carrusel
+                        const carouselFotos = document.querySelectorAll('#carouselFotos .carousel-item');
+                        const isActive = carouselFotos[index]?.classList.contains('active');
+                        if (carouselFotos[index]) {
+                            carouselFotos[index].remove();
+                        }
+
+                        // Si la foto eliminada era la activa, activar la siguiente
+                        if (isActive) {
+                            let nextIndex = index;
+                            if (nextIndex >= carouselFotos.length) {
+                                nextIndex = carouselFotos.length - 1;
+                            }
+                            setActiveCarouselItem(nextIndex + 1);
+                        }
+
+                        // Actualizar el índice de las fotos restantes
+                        document.querySelectorAll('.producto-img').forEach((img, idx) => {
+                            img.setAttribute('onclick', `setActiveCarouselItem(${idx + 1})`);
+                        });
+
+                        document.querySelectorAll('.papelera').forEach((papelera, idx) => {
+                            papelera.setAttribute('onclick', `borrarFoto(this, ${idx})`);
+                        });
+
+                        setAddBtn();
+                        setCarruselBtns()
+                    } else {
+                        alert('Error al eliminar la imagen');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setAddBtn();
+            setCarruselBtns()
+
+            document.querySelectorAll('.producto-img').forEach((ProdImg, index) => {
+                ProdImg.addEventListener('click', () => {
+                    setActiveCarouselItem(index + 1); // Ajustamos el índice para la función
+                });
+            });
+
+            let btnAddImg = document.querySelector('.añadirImagen');
+            btnAddImg.addEventListener('click', function() {
+                document.getElementById('inputImagen').click();
+            });
+
+            let inputImagen = document.getElementById('inputImagen');
+            inputImagen.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const idProducto = btnAddImg.getAttribute('data-idProducto');
+
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('imagen', file);
+                    formData.append('idProducto', idProducto);
+
+                    fetch('/agregarFoto', {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const nuevaImagen = document.createElement('img');
+                                nuevaImagen.src = '/imagenesProductos/' + data.foto;
+                                nuevaImagen.classList.add('producto-img');
+                                nuevaImagen.alt = 'Nueva imagen';
+                                nuevaImagen.setAttribute('onclick', `setActiveCarouselItem(${document.querySelectorAll('.producto-img').length + 1})`);
+
+                                // Añado la nueva imagen
+                                const menuFotos = document.querySelector('.fotos');
+                                const nuevoDiv = document.createElement('div');
+                                nuevoDiv.classList.add('col-2');
+                                nuevoDiv.setAttribute('id', 'foto');
+                                nuevoDiv.appendChild(nuevaImagen);
+
+                                const papelera = document.createElement('i');
+                                papelera.classList.add('fa-solid', 'fa-trash', 'papelera');
+                                papelera.setAttribute("data-idFoto", data.idFoto);
+                                papelera.setAttribute('onclick', `borrarFoto(this, ${document.querySelectorAll('.producto-img').length})`);
+                                nuevoDiv.appendChild(papelera);
+
+                                menuFotos.insertBefore(nuevoDiv, document.querySelector('#divBoton'));
+
+                                // Añado también la imagen al carrusel de imágenes
+                                const nuevoDivCarrusel = document.createElement('div');
+                                nuevoDivCarrusel.classList.add('carousel-item');
+                                const imgCarrusel = document.createElement('img');
+                                imgCarrusel.src = '/imagenesProductos/' + data.foto;
+                                imgCarrusel.classList.add('d-block', 'w-100');
+                                nuevoDivCarrusel.appendChild(imgCarrusel);
+                                document.querySelector('.carousel-inner').appendChild(nuevoDivCarrusel);
+
+                                // Marco la nueva imagen como la última en el carrusel
+                                document.querySelectorAll('.carousel-item').forEach(item => item.classList.remove('active'));
+                                nuevoDivCarrusel.classList.add('active');
+
+                                setAddBtn();
+                                setCarruselBtns()
+                            } else {
+                                alert('Error al subir la imagen');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                }
+            });
+        });
+    </script>
 {% endblock %}
