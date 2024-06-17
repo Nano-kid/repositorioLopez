@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,21 +11,25 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Form\CrearCategoriaType;
 use App\Entity\Categoria;
+use App\Entity\Usuario;
 
 
 class CategoriaController extends AbstractController
 {
-    #[Route('/categoria', name: 'app_categoria')]
-    public function index(): Response
-    {
-        return $this->render('categoria/index.html.twig', [
-            'controller_name' => 'CategoriaController',
-        ]);
-    }
-
     #[Route('/agregarCategoria', name: 'app_agregarCategoria')]
-    public function agregarCategoria(Request $request, EntityManagerInterface $entityManager): Response
+    public function agregarCategoria(Request $request, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response
     {
+        $token = $tokenStorage->getToken();
+        $usuario = null;
+
+        if ($token !== null && $token->getUser() instanceof Usuario) {
+            $usuario = $token->getUser();
+        }
+
+        if($usuario == null || $usuario->getRol() != "Administrador"){
+            return $this->redirectToRoute('app_producto');
+        }
+
         $categorias = $entityManager->getRepository(Categoria::class)->findAll();
 
         $categoria = new Categoria();
@@ -57,8 +62,19 @@ class CategoriaController extends AbstractController
     }
 
     #[Route('/modificarCategoria/{id}', name: 'app_modificarCategoria', methods: ['GET', 'POST'])]
-    public function modificarCategoria(Request $request, EntityManagerInterface $entityManager, $id): Response
+    public function modificarCategoria(Request $request, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage, $id): Response
     {
+        $token = $tokenStorage->getToken();
+        $usuario = null;
+
+        if ($token !== null && $token->getUser() instanceof Usuario) {
+            $usuario = $token->getUser();
+        }
+
+        if($usuario == null || $usuario->getRol() != "Administrador"){
+            return $this->redirectToRoute('app_producto');
+        }
+        
         $categoria = $entityManager->getRepository(Categoria::class)->find($id);
 
         if (!$categoria) {
@@ -82,8 +98,19 @@ class CategoriaController extends AbstractController
     }
 
     #[Route('/eliminarCategoria/{id}', name: 'app_eliminarCategoria')]
-    public function eliminarCategoria(Request $request, EntityManagerInterface $entityManager, $id): Response
+    public function eliminarCategoria(Request $request, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage, $id): Response
     {
+        $token = $tokenStorage->getToken();
+        $usuario = null;
+
+        if ($token !== null && $token->getUser() instanceof Usuario) {
+            $usuario = $token->getUser();
+        }
+
+        if($usuario == null || $usuario->getRol() != "Administrador"){
+            return $this->redirectToRoute('app_producto');
+        }
+
         $categoria = $entityManager->getRepository(Categoria::class)->find($id);
 
         if($categoria){

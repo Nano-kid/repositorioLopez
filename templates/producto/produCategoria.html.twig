@@ -1,20 +1,8 @@
 {% extends 'base.html.twig' %}
 {% block body %}
 <style>
-    header {
-        text-align: center;
-        padding: 1% 2%;
-        padding-bottom: 2%;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
     .producto{
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .titulo{
-        font-size: 1.25rem;
-        color:black;
     }
 
     .producto .card-img-top {
@@ -28,12 +16,6 @@
         max-height: 72px; /* Altura máxima de la descripción */
         overflow: hidden; /* Oculta cualquier texto que sobresalga */
         white-space: normal; /* Permite que el texto se divida en múltiples líneas */
-    }
-
-    .img-usuario{
-        height:30px; 
-        width:30px; 
-        object-fit: cover;
     }
 
     .pagination .page-link {
@@ -50,89 +32,16 @@
         background-color: var(--bs-warning) !important;
         color: #000 !important; /* Hover texto negro*/
     }
+
+    .enlace{
+        text-decoration: none;
+        color: black;
+    }
 </style>
 
-
-<header class="bg-warning">
-    <h2>Pagina Prueba</h2>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <a class="navbar-brand d-none d-lg-block" href="{{ path('app_producto')}}">Inicio</a>
-                <li class="nav-item d-block d-lg-none">
-                    <a class="nav-link titulo"  href="{{ path('app_producto')}}">Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#listaCategorias" data-bs-toggle="collapse" aria-expanded="false" aria-controls="listaCategorias">Categorías</a>
-                </li>
-                {% if usuario == null %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_login') }}">Iniciar Sesion</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <p style="display: inline"><img src="./imagenesUsuario/{{ usuario.foto.nombre }}" class="rounded-circle img-usuario">{{usuario.email}}</p>
-                        </a>
-
-                        <ul class="dropdown-menu">
-                            {% if usuario.rol == "Administrador" %}
-                                <li><a class="dropdown-item" href="{{ path('app_agregarProducto') }}">Agregar Producto</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_agregarCategoria') }}">Agregar Categoria</a></li>
-                            {% elseif usuario.rol == "Cliente" %}
-                                <li><a class="dropdown-item" href="{{ path('app_carrito') }}">Carrito</a></li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Cerrar Sesion</a></li>
-                        </ul>
-                    </li>
-                {% endif %}
-                </li>
-            </ul>
-            <form class="d-flex" role="search" action="{{ path('app_buscarProducto') }}" method="GET">
-                <input class="form-control me-2" type="search" name="query" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-dark" type="submit">Search</button>
-            </form>
-
-            <!--<form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-dark" type="submit">Search</button>
-            </form>-->
-            </div>
-        </div>
-    </nav>
-    <!--{% if usuario == null %}
-        <a  href="{{ path('app_login') }}">Iniciar Sesion</a>
-    {% else %}
-        <p style="display: inline">{{usuario.email}} <img src="./imagenesUsuario/{{ usuario.foto.nombre }}" style="max-height:30px"></p>
-        {% if usuario.rol == "Administrador" %}
-            <a href="{{ path('app_agregarProducto') }}">Agregar Producto</a>
-            <a href="{{ path('app_agregarCategoria') }}">Agregar Categoria</a>
-        {% elseif usuario.rol == "Cliente" %}
-            <a href="">Carrito</a>
-        {% endif %}
-        <a href="{{ path('app_logout') }}">Cerrar Sesion</a>
-    {% endif %}-->  
-</header>
-
-<!-- Sección colapsable para las categorías -->
-<div class="collapse" id="listaCategorias">
-    <div class="bg-dark p-3">
-        <h5 class="text-light text-center">Categorías</h5>
-        <div class="row">
-            {% for categoria in categorias %}
-                <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
-                    <a href="{{ path('app_categoria', {id: categoria.id}) }}" class="link-warning link-opacity-75-hover link-underline link-underline-opacity-0">{{ categoria.nombre }}</a>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
+{% block header %}
+    {% include 'cabecera.html.twig' %}
+{% endblock %}
 
 <div class="container mt-4">
     <h3 class="mb-3">{{categoria.nombre}}</h3>
@@ -143,7 +52,7 @@
                     <div class="producto card mb-3">
                         <a href="{{ path('app_verProducto', {id: producto.id}) }}"><img src="./imagenesProductos/{{ producto.fotos[0].nombre }}" class="card-img-top" alt="..."></a>
                         <div class="card-body">
-                            <h5 class="card-title"><a href="{{ path('app_verProducto', {id: producto.id}) }}">{{producto.nombre}}</a></h5>
+                            <h5 class="card-title"><a class="enlace" href="{{ path('app_verProducto', {id: producto.id}) }}">{{producto.nombre}}</a></h5>
                             <p class="card-text descripcion-limitada">{{producto.descripcion}}</p>
                         </div>
                         <div class="card-body">
@@ -176,7 +85,7 @@
                     </ul>
                 </nav>
             </div>
-        {% endif %}
+            {% endif %}
         {% elseif productos|length == 0 %}
             <p>No hay ningun producto todavia. Se añadiran proximamente</p>
         {% endif %}

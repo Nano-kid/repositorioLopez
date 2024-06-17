@@ -45,7 +45,7 @@ class CrearProductoType extends AbstractType
             ])
             ->add('unidadVenta', ChoiceType::class, [
                 'choices' => [
-                    'Unidad' => 'unidad',
+                    'Unidad' => 'Unidad',
                     'Cantidad' => 'Cantidad',
                 ],
                 'constraints' => [

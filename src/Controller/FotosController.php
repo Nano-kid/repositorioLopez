@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,36 +12,24 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Entity\Foto;
 use App\Entity\Producto;
+use App\Entity\Usuario;
 
 class FotosController extends AbstractController
 {
-    #[Route('/fotos', name: 'app_fotos')]
-    public function index(): Response
-    {
-        return $this->render('fotos/index.html.twig', [
-            'controller_name' => 'FotosController',
-        ]);
-    }
+    
+    #[Route('/agregarFoto', name: 'app_agregarFoto',  methods: ['POST'])]
+    public function agregarFoto(Request $request, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response {
+        $token = $tokenStorage->getToken();
+        $usuario = null;
 
-    #[Route('/gestionFotos/{id}', name: 'app_gestionFotos')]
-    public function gestionFotos(Request $request, EntityManagerInterface $entityManager, $id): Response
-    {
-        $producto = $entityManager->getRepository(Producto::class)->find($id);
-        if(isset($producto)){
-            $fotos = $producto->getFotos();
-        } else {
-            return $this->redirect($request->headers->get('referer'));
+        if ($token !== null && $token->getUser() instanceof Usuario) {
+            $usuario = $token->getUser();
         }
 
-        return $this->render('fotos/verFotos.html.twig', [
-            'fotos' => $fotos,
-            'producto' => $producto,
-        ]);
-    }
+        if($usuario == null || $usuario->getRol() != "Administrador"){
+            return $this->redirectToRoute('app_producto');
+        }
 
-    #[Route('/agregarFoto', name: 'app_agregarFoto',  methods: ['POST'])]
-    public function agregarFoto(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
-    {
         try{ 
             $foto = $request->files->get('imagen');
             $idProducto = $request->request->get('idProducto');
@@ -91,8 +80,18 @@ class FotosController extends AbstractController
     }
 
     #[Route('/eliminarFoto', name: 'app_eliminarFoto',  methods: ['POST'])]
-    public function eliminarFoto(Request $request, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
-    {
+    public function eliminarFoto(Request $request, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response {
+        $token = $tokenStorage->getToken();
+        $usuario = null;
+
+        if ($token !== null && $token->getUser() instanceof Usuario) {
+            $usuario = $token->getUser();
+        }
+
+        if($usuario == null || $usuario->getRol() != "Administrador"){
+            return $this->redirectToRoute('app_producto');
+        }
+
         try {
             $idFoto = $request->request->get('idFoto');
             $foto = $entityManager->getRepository(Foto::class)->find($idFoto);

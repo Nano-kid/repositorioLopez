@@ -1,0 +1,119 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<style>
+    .datosPersonales {
+        background-color: #f1f5f9;
+        padding: 2em;
+        border-radius: 15px;
+    }
+
+    .img-perfil {
+        max-width: 150px;
+        border-radius: 50%;
+    }
+
+    .titulo {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-bottom: 1em;
+        color: #0d6efd;
+    }
+
+    .info-item {
+        margin-bottom: 0.5em;
+    }
+
+    .info-item i {
+        margin-right: 0.5em;
+        color: #0d6efd;
+    }
+
+    .contacto, .habilidades, .educacion, .trabajos {
+        margin-bottom: 2em;
+    }
+
+    .habilidades ul, .educacion ul, .trabajos ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .habilidades ul li, .educacion ul li, .trabajos ul li {
+        margin-bottom: 0.5em;
+    }
+</style>
+
+{% block header %}
+    {% include 'cabecera.html.twig' %}
+{% endblock %}
+
+<div class="container mt-4">
+    <div class="row datosPersonales">
+        <div class="col-md-4 text-center">
+            <img src="{{ asset('imagenes/yo.png') }}" alt="Foto de curriculum" class="img-fluid img-perfil mb-3">
+            <h2>Marcos López Fernández</h2>
+            <h4>Desarrollador Web</h4>
+        </div>
+        <div class="col-md-8">
+            <div class="contacto mb-4">
+                <h3 class="titulo">Contacto</h3>
+                <p class="info-item"><i class="fas fa-phone-alt"></i> (55) 1234-5678</p>
+                <p class="info-item"><i class="fas fa-envelope"></i> marcoslopezfernandez16@gmail.com</p>
+            </div>
+            <div class="about-me mb-4">
+                <h3 class="titulo">Acerca de Mí</h3>
+                <p>Soy un desarrollador web en ciernes con un gran entusiasmo por las tecnologías web y una pasión por aprender. Poseo conocimientos básicos en PHP, Symfony, SpringBoot y JavaScript, y estoy constantemente ampliando mis habilidades a través de la autoformación y la participación en proyectos personales</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="habilidades mb-4">
+                <h3 class="titulo">Habilidades</h3>
+                <ul>
+                    <li>Liderazgo</li>
+                    <li>Comunicación asertiva</li>
+                    <li>Resolución de problemas</li>
+                    <li>Elaboración de documentación</li>
+                    <li>Trabajo en equipo</li>
+                </ul>
+            </div>
+            <div class="educacion mb-4">
+                <h3 class="titulo">Educación</h3>
+                <ul>
+                    <li>
+                        <strong>Titulo de Bachillerato</strong><br>
+                        IES Miguel de Cervantes Saavedra <br>
+                        2016-2022
+                    </li>
+                    <li>
+                        <strong>CFGS Desarrollo de Aplicaciones Web</strong><br>
+                        IES Juan Bosco<br>
+                        2022-2024
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="trabajos">
+                <h3 class="titulo">Experiencia Laboral</h3>
+                <ul>
+                    <li>
+                        <strong>Practicas SESCAM</strong><br>
+                        UDMC<br>
+                        2024-2024<br>
+                        Tras finalizar con exito los estudios de CFGS realice las practicas en la Unidad de desarrollo y Mejora Continua donde trate temas  como la arquitectura hexaganal y manejo de Jenkis Y Kubernetes
+                    </li>
+                    <li>
+                        <strong>Trabajador Agricola</strong><br>
+                        Empresa Familiar<br>
+                        2016-2014<br>
+                        Al tener mi familia una cultivos, son ya varios los veranos que he tenido qur ir a trabajar como uno mas.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

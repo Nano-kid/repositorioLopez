@@ -1,23 +1,27 @@
 {% extends 'base.html.twig' %}
 {% block body %}
 <style>
-    header {
-        text-align: center;
-        padding: 1% 2%;
-        padding-bottom: 2%;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    html {
+        scroll-behavior: smooth;
     }
 
     .producto{
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%; /* Ajusta el ancho de la imagen para que se ajuste al contenedor */
+        height: 430px; /* Altura fija para todas las imágenes */
+        object-fit: cover; /* Escala la imagen para llenar el contenedor */
     }
 
-    .titulo{
-        font-size: 1.25rem;
-        color:black;
+    .enlace{
+        text-decoration: none;
+        color: black;
     }
 
-    .producto .card-img-top {
+    .tarjeta{
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .tarjeta .card-img-top {
         width: 100%; /* Ajusta el ancho según sea necesario */
         height: 200px; /* Altura fija para todas las imágenes */
         object-fit: cover; /* Escala la imagen para llenar el contenedor */
@@ -29,120 +33,114 @@
         white-space: normal; /* Permite que el texto se divida en múltiples líneas */
     }
 
-    .img-usuario{
-        height:30px; 
-        width:30px; 
-        object-fit: cover;
+    .carousel-container {
+        width: 85%; /* Ajusta el ancho del carrusel */
+        margin: 0 auto; /* Centra el carrusel horizontalmente */
     }
-
 </style>
+{% block javascripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {{ parent() }}
+    <script>
+        $(document).ready(function(){
+            $('a[href="#listaCategorias"]').on('click', function(event) {
+                event.preventDefault();
+                var target = this.hash;
+                var $target = $(target);
 
-<header class="bg-warning">
-    <h2>Pagina Prueba</h2>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <a class="navbar-brand d-none d-lg-block" href="{{ path('app_producto')}}">Inicio</a>
-                <li class="nav-item d-block d-lg-none">
-                    <a class="nav-link titulo"  href="{{ path('app_producto')}}">Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#listaCategorias" data-bs-toggle="collapse" aria-expanded="false" aria-controls="listaCategorias">Categorías</a>
-                </li>
-                {% if usuario == null %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_login') }}">Iniciar Sesion</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <p style="display: inline"><img src="./imagenesUsuario/{{ usuario.foto.nombre }}" class="rounded-circle img-usuario">{{usuario.email}}</p>
-                        </a>
+                // Obtén la posición del elemento objetivo y ajusta según sea necesario
+                var offset = $target.offset().top - 190; // Puedes ajustar el valor de -20 según sea necesario
 
-                        <ul class="dropdown-menu">
-                            {% if usuario.rol == "Administrador" %}
-                                <li><a class="dropdown-item" href="{{ path('app_agregarProducto') }}">Agregar Producto</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_agregarCategoria') }}">Agregar Categoria</a></li>
-                            {% elseif usuario.rol == "Cliente" %}
-                                <li><a class="dropdown-item" href="{{ path('app_carrito') }}">Carrito</a></li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Cerrar Sesion</a></li>
-                        </ul>
-                    </li>
-                {% endif %}
-                </li>
-            </ul>
-            <form class="d-flex" role="search" action="{{ path('app_buscarProducto') }}" method="GET">
-                <input class="form-control me-2" type="search" name="query" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-dark" type="submit">Search</button>
-            </form>
+                $('html, body').stop().animate({
+                    'scrollTop': offset
+                }, 100, 'swing', function () {
+                    window.location.hash = target;
+                });
 
-            <!--<form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-dark" type="submit">Search</button>
-            </form>-->
+                // Despliega la lista de categorías si está colapsada
+                if (!$target.hasClass('show')) {
+                    $target.collapse('show');
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block header %}
+    {% include 'cabecera.html.twig' %}
+{% endblock %}
+
+<div class="container mt-4 mb-3">
+    {% if productos|length > 0 %}
+    <div class="carousel-container">
+        <h3 class="text-center mb-3">{{categoria.nombre}}</h3>
+        <div id="productosCarrusel" class="carousel  slide carousel-fade carousel-dark slide">
+            <div class="carousel-indicators">
+                {% for producto in productos %}
+                    <button type="button" data-bs-target="#productosCarrusel" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}" aria-current="{% if loop.first %}true{% else %}false{% endif %}" aria-label="Slide {{ loop.index }}"></button>
+                {% endfor %}
             </div>
+            <div class="carousel-inner">
+                {% for producto in productos %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <a href="{{ path('app_verProducto', {id: producto.id}) }}"><img src="{{ asset('imagenesProductos/' ~ producto.fotos[0].nombre) }}" class="producto d-block rounded-4" alt="..."></a>
+                        <div class="carousel-caption d-none d-md-block">
+                            <h5 style="color: white;">{{producto.nombre}}</h5>
+                            <p style="color: white;" class="descripcion-limitada">{{producto.descripcion}}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#productosCarrusel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#productosCarrusel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
-    </nav>
-    <!--{% if usuario == null %}
-        <a  href="{{ path('app_login') }}">Iniciar Sesion</a>
-    {% else %}
-        <p style="display: inline">{{usuario.email}} <img src="./imagenesUsuario/{{ usuario.foto.nombre }}" style="max-height:30px"></p>
-        {% if usuario.rol == "Administrador" %}
-            <a href="{{ path('app_agregarProducto') }}">Agregar Producto</a>
-            <a href="{{ path('app_agregarCategoria') }}">Agregar Categoria</a>
-        {% elseif usuario.rol == "Cliente" %}
-            <a href="">Carrito</a>
-        {% endif %}
-        <a href="{{ path('app_logout') }}">Cerrar Sesion</a>
-    {% endif %}-->  
-</header>
-
-<!-- Sección colapsable para las categorías -->
-<div class="collapse" id="listaCategorias">
-    <div class="bg-dark p-3">
-        <h5 class="text-light text-center">Categorías</h5>
+        <p class="text-center mb-3 mt-2">
+            <a href="{{ path('app_categoria', {id: categoria.id}) }}">Ir a {{categoria.nombre}}</a>
+        </p>{% if productosCategoria|length > 0 %}<hr>{% endif %}
+    </div>
+    {% endif %}
+    {% if productosCategoria|length > 0 %}
         <div class="row">
-            {% for categoria in categorias %}
-                <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
-                    <!--<form action="{{ path('app_categoria') }}" method="POST" style="display: inline;">
-                        <input type="hidden" name="categoria" value="{{ categoria.id }}">
-                        <button type="submit" class="btn btn-link link-warning link-opacity-75-hover link-underline link-underline-opacity-0 p-0">{{ categoria.nombre }}</button>
-                    </form>-->
-                    <a href="{{ path('app_categoria', {id: categoria.id}) }}" class="link-warning link-opacity-75-hover link-underline link-underline-opacity-0">{{ categoria.nombre }}</a>
+            <h3 class="text-center mb-3 mt-2">Otros productos({{productosCategoria[0].categoria.nombre}})</h3>
+            {% for producto in productosCategoria %}
+                <div class="col-md-4">
+                    <div class="tarjeta card mb-3">
+                        <a href="{{ path('app_verProducto', {id: producto.id}) }}"><img src="./imagenesProductos/{{ producto.fotos[0].nombre }}" class="card-img-top" alt="..."></a>
+                        <div class="card-body">
+                            <h5 class="card-title"><a class="enlace" href="{{ path('app_verProducto', {id: producto.id}) }}">{{producto.nombre}}</a></h5>
+                            <p class="card-text descripcion-limitada">{{producto.descripcion}}</p>
+                        </div>
+                        <div class="card-body">
+                            <a href="{{ path('app_verProducto', {id: producto.id}) }}" class="btn btn-warning">Ver Producto</a>
+                        </div>
+                    </div>
                 </div>
             {% endfor %}
+            <p class="text-center mb-3 mt-2">
+                <a href="{{ path('app_categoria', {id: productosCategoria[0].categoria.id}) }}">Ir a {{ productosCategoria[0].categoria.nombre }}</a>
+            </p>
+        </div>
+    {% endif %}
+    <div class="row" style="justify-content: center;">
+    <hr class="w-75">
+        <div class="col-12">
+            <h4 class="text-center mb-3 mt-2">Explora Otras Categorias</h4>
+            <p class="mb-3 mt-2">
+                Además de nuestra selección de productos del terreno, nuestra tienda ofrece una variedad de otras categorías cuidadosamente seleccionadas. Te invitamos a explorar estas categorías adicionales, donde encontrarás una amplia gama de productos que pueden ser de tu interés. <!--Haz clic en el enlace a continuación para descubrir más.-->
+                <a href="#listaCategorias">Ver Categorías</a>
+            </p>
         </div>
     </div>
 </div>
 
+{% block footer %}
+    {% include 'footer.html.twig' %}
+{% endblock %}
 
-<div class="container mt-4">
-    <div class="row">
-        {% for producto in productos %}
-            <div class="col-md-4">
-                <div class="producto card mb-3">
-                    <a href="{{ path('app_verProducto', {id: producto.id}) }}"><img src="./imagenesProductos/{{ producto.fotos[0].nombre }}" class="card-img-top" alt="..."></a>
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="{{ path('app_verProducto', {id: producto.id}) }}">{{producto.nombre}}</a></h5>
-                        <p class="card-text descripcion-limitada">{{producto.descripcion}}</p>
-                    </div>
-                    <div class="card-body">
-                        <a href="{{ path('app_verProducto', {id: producto.id}) }}" class="btn btn-warning">Ver Producto</a>
-                        <!--{% if usuario != null and usuario.rol == "Administrador" %}
-                            <a href="{{ path('app_modificarProducto', {id: producto.id}) }}" class="btn btn-warning">Modificar Producto</a>
-                        {% else %}
-                            <button type="button" class="btn btn-warning">Añadir al pedido</button>
-                        {% endif %}-->
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-</div>
 {% endblock %}

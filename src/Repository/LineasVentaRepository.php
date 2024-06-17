@@ -16,6 +16,17 @@ class LineasVentaRepository extends ServiceEntityRepository
         parent::__construct($registry, LineasVenta::class);
     }
 
+    public function findByPedidoId($pedidoId)
+    {
+        return $this->createQueryBuilder('l')
+            ->andWhere('l.pedido = :pedidoId')
+            ->setParameter('pedidoId', $pedidoId)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+
     //    /**
     //     * @return LineasVenta[] Returns an array of LineasVenta objects
     //     */

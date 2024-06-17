@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,11 +23,66 @@ use App\Entity\LineasVenta;
 
 class ProductoController extends AbstractController
 {
+    private function limitarPorFrases($text, $maxSentences = 2)
+    {
+        $sentences = preg_split('/(\.|\?|!)\s/', $text, $maxSentences + 1, PREG_SPLIT_DELIM_CAPTURE);
+
+        if (count($sentences) > $maxSentences * 2) {
+            return implode('', array_slice($sentences, 0, $maxSentences * 2));
+        }
+
+        return $text ;
+    }
+
+    private function limitarPorLongitud($text, $maxLength = 120) {
+        if (strlen($text) > $maxLength) {
+            $text = substr($text, 0, $maxLength);
+            $lastSpace = strrpos($text, ' ');
+            if ($lastSpace !== false) {
+                $text = substr($text, 0, $lastSpace);
+            }
+            $text .= ' ...';
+        }
+        return $text;
+    }
+
     #[Route('/', name: 'app_producto')]
     public function index(EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response
-    {   
-        $productos = $entityManager->getRepository(Producto::class)->findAll();
+    {
+        $categoria = $entityManager->getRepository(Categoria::class)->findOneBy(['nombre' => 'Productos del terreno']);
         $categorias = $entityManager->getRepository(Categoria::class)->findAll();
+
+        if ($categoria !== null) {
+            $productos = $entityManager->getRepository(Producto::class)->findBy(['categoria' => $categoria]);
+            shuffle($productos);
+            $productos = array_slice($productos, 0, 5);
+
+            foreach ($productos as $producto) {
+                $producto->setDescripcion($this->limitarPorFrases($producto->getDescripcion()));
+            }
+        } else {
+            $productos = [];
+        }
+
+        $categoriasFiltradas = array_filter($categorias, function($c) use ($entityManager, $categoria) {
+            if ($c === $categoria) {
+                return false;
+            }
+            $productosCategoria = $entityManager->getRepository(Producto::class)->findBy(['categoria' => $c]);
+            return count($productosCategoria) >= 3;
+        });
+
+        $categoriaRandom = null;
+        if (count($categoriasFiltradas) > 0) {
+            $categoriaRandom = $categoriasFiltradas[array_rand($categoriasFiltradas)];
+            $productosCategoria = $entityManager->getRepository(Producto::class)->findBy(['categoria' => $categoriaRandom]);
+            shuffle($productosCategoria);
+            $productosCategoria = array_slice($productosCategoria, 0, 3);
+    
+            foreach ($productosCategoria as $producto) {
+                $producto->setDescripcion($this->limitarPorLongitud($producto->getDescripcion()));
+            }
+        }
 
         $token = $tokenStorage->getToken();
         $usuario = null;
@@ -37,7 +93,9 @@ class ProductoController extends AbstractController
 
         $response = $this->render('producto/index.html.twig', [
             'productos' => $productos,
+            'productosCategoria' => $productosCategoria,
             'categorias' => $categorias,
+            'categoria' => $categoria,
             'usuario' => $usuario,
         ]);
 
@@ -50,9 +108,21 @@ class ProductoController extends AbstractController
         return $response;
     }
 
+
     #[Route('/agregarProducto', name: 'app_agregarProducto')]
-    public function agregarProducto(Request $request, EntityManagerInterface $entityManager): Response
+    public function agregarProducto(Request $request, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response
     {
+        $token = $tokenStorage->getToken();
+        $usuario = null;
+        
+        if ($token !== null && $token->getUser() instanceof Usuario) {
+            $usuario = $token->getUser();
+        }
+
+        if($usuario == null || $usuario->getRol() != "Administrador") {
+            return $this->redirectToRoute('app_producto');
+        }
+
         $producto = new Producto();
         $formulario = $this->createForm(CrearProductoType::class, $producto, [
             'is_image_required' => true,
@@ -92,8 +162,19 @@ class ProductoController extends AbstractController
     }
 
     #[Route('/modificarProducto/{id}', name: 'app_modificarProducto')]
-    public function modificarProducto(Request $request, EntityManagerInterface $entityManager, $id): Response
+    public function modificarProducto(Request $request, EntityManagerInterface $entityManager, SessionInterface $session, TokenStorageInterface $tokenStorage, $id): Response
     {
+        $token = $tokenStorage->getToken();
+        $usuario = null;
+        
+        if ($token !== null && $token->getUser() instanceof Usuario) {
+            $usuario = $token->getUser();
+        }
+
+        if($usuario == null || $usuario->getRol() != "Administrador") {
+            return $this->redirectToRoute('app_producto');
+        }
+
         $producto = $entityManager->getRepository(Producto::class)->find($id);
 
         $formulario = $this->createForm(CrearProductoType::class, $producto);
@@ -115,6 +196,17 @@ class ProductoController extends AbstractController
     #[Route('/eliminarProducto/{id}', name: 'app_eliminarProducto')]
     public function eliminarProducto(Request $request, EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage, $id): Response
     {
+        $token = $tokenStorage->getToken();
+        $usuario = null;
+        
+        if ($token !== null && $token->getUser() instanceof Usuario) {
+            $usuario = $token->getUser();
+        }
+
+        if($usuario == null || $usuario->getRol() != "Administrador") {
+            return $this->redirectToRoute('app_producto');
+        }
+        
         $producto = $entityManager->getRepository(Producto::class)->find($id);
 
         if($producto){
@@ -125,8 +217,8 @@ class ProductoController extends AbstractController
         return $this->redirectToRoute('app_producto');
     }
 
-    #[Route('/verProducto/{id}', name: 'app_verProducto', methods: ['GET'])]
-    public function verProducto(EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage, $id, Request $request): Response {
+    #[Route('/verProducto/{id}', name: 'app_verProducto', methods: ['GET', 'POST'])]
+    public function verProducto(EntityManagerInterface $entityManager, SessionInterface $session, TokenStorageInterface $tokenStorage, $id, Request $request): Response {
         //Obtener el producto y productos relacionados de la misma categoria
         $producto = $entityManager->getRepository(Producto::class)->find($id);
         $categorias = $entityManager->getRepository(Categoria::class)->findAll();
@@ -136,9 +228,12 @@ class ProductoController extends AbstractController
         }
 
         $categoria = $producto->getCategoria();
-        $productosRelacionados = $categoria->getProductos()->filter(function($productoArray) use ($id) {
+        $productosRelacionados = array_filter($entityManager->getRepository(Producto::class)->findBy(['categoria' => $categoria]), function($productoArray) use ($id) {
             return $productoArray->getId() != $id;
         });
+        shuffle($productosRelacionados);
+        $productosRelacionados = array_slice($productosRelacionados, 0, 4);
+
         
         $token = $tokenStorage->getToken();
         $usuario = null;
@@ -149,6 +244,7 @@ class ProductoController extends AbstractController
 
         $mensaje = new Mensaje();
         $formulario = $this->createForm(AgregarMensajeType::class, $mensaje);
+        $formularioModificar = $this->createForm(AgregarMensajeType::class, $mensaje);
         $formulario->handleRequest($request);
         
         if($formulario->isSubmitted() && $formulario->isValid()){
@@ -164,14 +260,19 @@ class ProductoController extends AbstractController
 
         $lineaVenta = new LineasVenta();
         $formAgregarCarrito = $this->createForm(AgregarLineaVentaType::class, $lineaVenta);
+        $mensaje = $session->get('mensaje', null);
+        $session->set('mensaje', null);
 
         $response = $this->render('producto/verProducto.html.twig', [
+            'mensaje' => $mensaje,
             'producto' => $producto,
             'usuario' => $usuario,
             'productosRelacionados' => $productosRelacionados,
             'formAgregarCarrito' => $formAgregarCarrito,
+            'formModificarMensaje' => $formularioModificar,
             'formulario' => $formulario,
             'categorias' => $categorias,
+            //'usuarioRol' => $usuario ? $usuario->getRol() : 'Invitado',
         ]);
         
         // Añadir cabeceras para evitar caché
@@ -209,11 +310,21 @@ class ProductoController extends AbstractController
             ->getQuery()
             ->getResult();
 
+        $paginaActual = $request->query->getInt('paginaActual', 1);
+        $productosPorPagina = 6;
+        $numProductos = count($productos);
+        $numPaginas= ceil($numProductos / $productosPorPagina );
+
+        $inicio = ($paginaActual - 1) * $productosPorPagina ;
+        $productosPaginados = array_slice($productos, $inicio, $productosPorPagina );
+
         return $this->render('producto/resultadosBusqueda.html.twig', [
-            'productos' => $productos,
+            'productos' => $productosPaginados,
             'query' => $query,
             'usuario' => $usuario,
             'categorias' => $categorias,
+            'numPaginas' => $numPaginas,
+            'paginaActual' => $paginaActual,
         ]);
     }
 
@@ -240,6 +351,9 @@ class ProductoController extends AbstractController
 
         // Obtener productos por categoría
         $productos = $entityManager->getRepository(Producto::class)->findBy(['categoria' => $categoria]);
+        foreach ($productos as $producto) {
+            $producto->setDescripcion($this->limitarPorLongitud($producto->getDescripcion()));
+        }
 
         $paginaActual = $request->query->getInt('paginaActual', 1);
         $productosPorPagina = 6;

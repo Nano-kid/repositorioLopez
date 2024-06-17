@@ -6,10 +6,12 @@ use App\Entity\LineasVenta;
 use App\Entity\Pedido;
 use App\Entity\Producto;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class AgregarLineaVentaType extends AbstractType
 {
@@ -17,6 +19,7 @@ class AgregarLineaVentaType extends AbstractType
     {
         $builder
             ->add('cantidad', NumberType::class, [
+                'mapped' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Ingresa una cantidad',
@@ -24,6 +27,14 @@ class AgregarLineaVentaType extends AbstractType
                 ],
                 'required' => true,
             ])
+            /*->add('unidadVenta', HiddenType::class, [
+                'mapped' => false,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Debes introducir una unidad de venta',
+                    ]),
+                ]
+            ])*/
             /*->add('descuento')
             ->add('total')
             ->add('producto', EntityType::class, [

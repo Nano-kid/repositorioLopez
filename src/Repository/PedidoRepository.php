@@ -16,6 +16,46 @@ class PedidoRepository extends ServiceEntityRepository
         parent::__construct($registry, Pedido::class);
     }
 
+    public function findAllOrderedByDateDesc() {
+    return $this->createQueryBuilder('p')
+        ->orderBy('p.fecha', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
+
+    public function findByUsuarioId($usuarioId) {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.usuario = :usuarioId')
+            ->setParameter('usuarioId', $usuarioId)
+            ->orderBy('p.fecha', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+    
+    public function findByEstado($estado) {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.estado = :estado')
+            ->setParameter('estado', $estado)
+            ->orderBy('p.fecha', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+    
+    public function findByUsuarioIdAndEstado($usuarioId, $estado = null) {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->andWhere('p.usuario = :usuarioId')
+            ->setParameter('usuarioId', $usuarioId);
+    
+        if ($estado !== null) {
+            $queryBuilder->andWhere('p.estado = :estado')
+                ->setParameter('estado', $estado);
+        }
+    
+        return $queryBuilder->orderBy('p.fecha', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Pedido[] Returns an array of Pedido objects
 //     */

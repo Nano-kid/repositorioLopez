@@ -1,20 +1,8 @@
 {% extends 'base.html.twig' %}
 {% block body %}
 <style>
-    header {
-        text-align: center;
-        padding: 1% 2%;
-        padding-bottom: 2%;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
     .producto{
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .titulo{
-        font-size: 1.25rem;
-        color:black;
     }
 
     .carousel-item img {
@@ -29,10 +17,9 @@
         object-fit: cover; /* Escala la imagen para llenar el contenedor */
     }
 
-    .img-usuario{
-        height:30px; 
-        width:30px; 
-        object-fit: cover;
+    .enlace{
+        text-decoration: none;
+        color: black;
     }
 
     .img-usuario-mensaje{
@@ -73,7 +60,7 @@
         position: relative;
     }
 
-    .papelera {
+    .papelera, .papeleraMsg, .btnEditar {
         position: absolute;
         color: black;
         top: 7px;
@@ -82,7 +69,16 @@
         transition: color 0.4s;
     }
 
-    .papelera:hover {
+    .papeleraMsg, .btnEditar {
+        top: 0px;
+        right: 7px;
+    }
+
+    .btnEditar {
+        right: 25px;
+    }
+
+    .papelera:hover, .papeleraMsg:hover, .btnEditar:hover {
         color: #ffc107;
     }
 
@@ -92,87 +88,11 @@
         overflow: hidden; /* Oculta cualquier texto que sobresalga */
         white-space: normal; /* Permite que el texto se divida en múltiples líneas */
     }
-
-    .texto-truncado {
-        position: relative; /* Permitir que el contenido truncado sea relativo */
-    }
-
-    .texto-truncado::after {
-        content: '...'; /* Agrega puntos suspensivos */
-        position: absolute; /* Posiciona los puntos suspensivos */
-        bottom: 0; /* Alinea los puntos suspensivos al final */
-        right: 30px; /* Alinea los puntos suspensivos a la derecha */
-        background: white; /* Fondo para cubrir el texto truncado */
-    }
 </style>
 
-<header class="bg-warning">
-    <h2>Pagina Prueba</h2>
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <a class="navbar-brand d-none d-lg-block" href="{{ path('app_producto')}}">Inicio</a>
-                <li class="nav-item d-block d-lg-none">
-                    <a class="nav-link titulo"  href="{{ path('app_producto')}}">Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#listaCategorias" data-bs-toggle="collapse" aria-expanded="false" aria-controls="listaCategorias">Categorías</a>
-                </li>
-                {% if usuario == null %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_login') }}">Iniciar Sesion</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <p style="display: inline"><img src="{{ asset('imagenesUsuario/' ~ usuario.foto.nombre) }}" class="rounded-circle img-usuario">{{usuario.email}}</p>
-                        </a>
-
-                        <ul class="dropdown-menu">
-                            {% if usuario.rol == "Administrador" %}
-                                <li><a class="dropdown-item" href="{{ path('app_agregarProducto') }}">Agregar Producto</a></li>
-                                <li><a class="dropdown-item" href="{{ path('app_agregarCategoria') }}">Agregar Categoria</a></li>
-                            {% elseif usuario.rol == "Cliente" %}
-                                <li><a class="dropdown-item" href="{{ path('app_carrito') }}">Carrito</a></li>
-                            {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Cerrar Sesion</a></li>
-                        </ul>
-                    </li>
-                {% endif %}
-                </li>
-            </ul>
-            <form class="d-flex" role="search" action="{{ path('app_buscarProducto') }}" method="GET">
-                <input class="form-control me-2" type="search" name="query" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-dark" type="submit">Search</button>
-            </form>
-
-            <!--<form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-dark" type="submit">Search</button>
-            </form>-->
-            </div>
-        </div>
-    </nav> 
-</header>
-
-<!-- Sección colapsable para las categorías -->
-<div class="collapse" id="listaCategorias">
-    <div class="bg-dark p-3">
-        <h5 class="text-light text-center">Categorías</h5>
-        <div class="row">
-            {% for categoria in categorias %}
-                <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
-                    <a href="{{ path('app_categoria', {id: categoria.id}) }}" class="link-warning link-opacity-75-hover link-underline link-underline-opacity-0">{{ categoria.nombre }}</a>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+{% block header %}
+    {% include 'cabecera.html.twig' %}
+{% endblock %}
 
 <div class="container mt-5 mb-3">
     <div class="row">
@@ -204,14 +124,14 @@
                             {% for foto in producto.fotos %}
                                 <div class="col-2" id="foto">
                                     <img src="{{ asset('imagenesProductos/' ~ foto.nombre) }}" class="producto-img" alt="...">
-                                    {% if usuario != null and usuario.rol == "Administrador" %}
+                                    {% if usuario != null and usuario.rol == "Administrador" and producto.fotos|length > 1  %}
                                         <i class="fa-solid fa-trash papelera" data-idFoto="{{ foto.id }}" onclick="borrarFoto(this, {{ loop.index0 }})"></i>
                                     {% endif %}
                                 </div>
                             {% endfor %}
                             {% if usuario != null and usuario.rol == "Administrador" %}
                                 <div class="col-2" id="divBoton">
-                                    <button class="añadirImagen btn btn-warning" data-idProducto="{{ producto.id }}">+</button>
+                                    <button class="añadirImagen btn btn-warning" data-idProducto="{{ producto.id }}" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Añadir foto">+</button>
                                     <input type="file" style="display: none;" id="inputImagen">
                                 </div>
                             {% endif %}
@@ -219,39 +139,57 @@
                     </div>
                 </div>
             {% endif %}
+
+            <div class="card d-md-none d-sm-block mt-4">
+                <div class="card-header">
+                    <h3>{{ producto.nombre }}</h3>
+                </div>
+                <div class="card-body">
+                    {% if producto.descuento != 0 or producto.descuento != null %}
+                        <h5 class="card-title">Precio: <s>{{ producto.precio }}€</s> {{ producto.precio - (producto.precio * producto.descuento / 100) }}€</h5>
+                    {% else %}
+                        <h5 class="card-title">Precio: {{ producto.precio }}€</h5>
+                    {% endif %}
+                    <p class="card-text">{{ producto.descripcion }}</p>
+                    {% if usuario != null and usuario.rol == "Administrador" %}
+                        <a href="{{ path('app_modificarProducto', {id: producto.id}) }}" class="btn btn-warning">Modificar Producto</a>
+                        <a href="{{ path('app_eliminarProducto', {id: producto.id}) }}" class="btn btn-danger">Eliminar Producto</a>
+                    {% elseif usuario != null and usuario.rol == "Cliente" %}
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalCantidad">Añadir al Carrito</button>
+                    {% endif %}
+                </div>
+            </div>
         
             <!-- Formulario para agregar comentario -->
             <div class="row mt-4">
-                <div class="col-md-12">
-                    <h3 class="mb-2">Agregar Comentario</h3>
-                    {{ form_start(formulario, {'attr': {'class': 'mb-3'}}) }}
-                        {{ form_row(formulario.contenido, {'attr': {'class': 'form-control', 'rows': 3, 'required': true}}) }}
-                        <button type="submit" class="btn btn-primary mt-2">Enviar</button>
-                    {{ form_end(formulario) }}
-                </div>
+                {% if usuario != null %}
+                    <div class="col-md-12">
+                        <h3 class="mb-2">Agregar Comentario</h3>
+                        {{ form_start(formulario, {'attr': {'class': 'mb-3'}}) }}
+                            {{ form_row(formulario.contenido, {'attr': {'class': 'form-control', 'rows': 3, 'required': true}}) }}
+                            <button type="submit" class="btn btn-primary mt-2">Enviar</button>
+                        {{ form_end(formulario) }}
+                    </div>
+                {% endif %}
             
                 <div class="col-md-12 mb-3">
                     <h3>Comentarios de los Compradores</h3>
                     {% if producto.mensajes|length > 0 %}
                         {% for mensaje in producto.mensajes %}
-                            <!--<li class="list-group-item">
-                                <div class="ml-3">
-                                    <p>
-                                        <img src="{{ asset('imagenesUsuario/' ~ mensaje.usuario.foto.nombre) }}" class="rounded-circle img-usuario-mensaje">
-                                        {{ mensaje.usuario.email }} 
-                                        <span class="d-block">{{ mensaje.fecha|date('Y-m-d') }}</span>
-                                    </p>
-                                </div>
-                                {{ mensaje.contenido }}
-                            </li>-->
                             <div class="mb-3 rounded border p-msg">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="col-auto px-1">
                                         <img src="{{ asset('imagenesUsuario/' ~ mensaje.usuario.foto.nombre) }}" class="rounded-circle img-usuario-mensaje mt-1">
                                     </div>
-                                    <div class="col">
+                                    <div class="col" style="position: relative;">
                                         {{ mensaje.usuario.email }}
                                         <span class="d-block">{{ mensaje.fecha|date('Y-m-d') }}</span>
+                                        {% if usuario != null and (mensaje.usuario.email == usuario.email or usuario.rol == "Administrador" )  %}
+                                            <a href="{{ path('app_borrarMensaje', {id: mensaje.id}) }}"><i class="fa-solid fa-trash papeleraMsg" data-idComentario="{{ mensaje.id }}"></i></a>
+                                        {% endif %}
+                                        {% if usuario != null and mensaje.usuario.email == usuario.email  %}
+                                            <i class="fa-solid fa-pen-to-square btnEditar" data-bs-toggle="modal" data-bs-target="#modalModificarMensaje"  onclick="mostrarModalModificarMensaje({{ mensaje.id }})"></i>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 {{ mensaje.contenido }}
@@ -265,12 +203,16 @@
         </div>
         
         <div class="col-md-5">
-            <div class="card">
+            <div class="card d-none d-md-block">
                 <div class="card-header">
                     <h3>{{ producto.nombre }}</h3>
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title">Precio: {{ producto.precio }}€</h5>
+                    {% if producto.descuento != 0 or producto.descuento != null %}
+                        <h5 class="card-title">Precio: <s>{{ producto.precio }}€</s> {{ producto.precio - (producto.precio * producto.descuento / 100) }}€</h5>
+                    {% else %}
+                        <h5 class="card-title">Precio: {{ producto.precio }}€</h5>
+                    {% endif %}
                     <p class="card-text">{{ producto.descripcion }}</p>
                     {% if usuario != null and usuario.rol == "Administrador" %}
                         <a href="{{ path('app_modificarProducto', {id: producto.id}) }}" class="btn btn-warning">Modificar Producto</a>
@@ -289,7 +231,7 @@
                     <div class="producto card mb-3">
                         <a href="{{ path('app_verProducto', {id: producto.id}) }}"><img src="{{ asset('imagenesProductos/' ~ producto.fotos[0].nombre) }}" class="card-img-top" alt="..."></a>
                         <div class="card-body">
-                            <h5 class="card-title"><a href="{{ path('app_verProducto', {id: producto.id}) }}">{{producto.nombre}}</a></h5>
+                            <h5 class="card-title"><a class="enlace" href="{{ path('app_verProducto', {id: producto.id}) }}">{{producto.nombre}}</a></h5>
                             <p class="card-text descripcion-limitada">{{producto.descripcion}}</p>
                         </div>
                     </div>
@@ -300,39 +242,85 @@
 </div>
 
 <div class="modal fade" id="modalCantidad" tabindex="-1" aria-labelledby="modalCantidadLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="modalCantidadLabel">Ingresar Cantidad</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                {{ form_start(formAgregarCarrito, {
+                    'attr': {'id': 'formAgregarCarrito'},
+                    'action': path('app_agregarAlCarrito', {'productoId': producto.id}),
+                    'method': 'POST'
+                }) }}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            {{ form_row(formAgregarCarrito.cantidad, {'attr': {'class': 'form-control', 'id': 'cantidadInput', 'placeholder': 'Ingresa una cantidad', 'step': '1', 'min': '1'}}) }}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning" id="btnAgregarCarrito" onclick="desactivarBoton()">Añadir al Carrito</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                {{ form_end(formAgregarCarrito) }}
+            </div>
+        </div>
+    </div>
+
+<div class="modal fade" id="modalModificarMensaje" tabindex="-1" aria-labelledby="modalModificarMensajeLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="modalCantidadLabel">Ingresar Cantidad</h1>
+                <h1 class="modal-title fs-5" id="modalModificarMensajeLabel">Modificar Mensaje</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            {{ form_start(formAgregarCarrito, {
-                'attr': {'id': 'formAgregarCarrito'},
-                'action': path('app_agregarAlCarrito', {'productoId': producto.id}),
+            {{ form_start(formModificarMensaje, {
+                'attr': {'id': 'formModificarMensaje'},
                 'method': 'POST'
             }) }}
                 <div class="modal-body">
                     <div class="mb-3">
-                        {% if producto.unidadVenta == "Cantidad" %}
-                            {{ form_row(formAgregarCarrito.cantidad, {'attr': {'class': 'form-control', 'placeholder': 'Ingresa una cantidad', 'step': 'any'}}) }}
-                        {% else %}
-                            {{ form_row(formAgregarCarrito.cantidad, {'attr': {'class': 'form-control', 'placeholder': 'Ingresa una cantidad', 'step': '1'}}) }}
-                        {% endif %}
+                        {{ form_row(formModificarMensaje.contenido, {'attr': {'class': 'form-control', 'rows': 3, 'required': true,'id': 'contenido'}}) }}
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-warning">Añadir al Carrito</button>
+                    <button type="submit" class="btn btn-warning">Modificar Mensaje</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
-            {{ form_end(formAgregarCarrito) }}
+            {{ form_end(formModificarMensaje) }}
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="mensaje" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">KÄNSARE</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            {{ mensaje|json_encode }}
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     {{ parent() }}
     <script>
+        //Se encarga de desabilitar el boton de añadir al carrito
+        function desactivarBoton() {
+            const cantidadInput = document.getElementById('agregar_linea_venta_cantidad');
+            const btnAgregarCarrito = document.getElementById('btnAgregarCarrito');
+            if (cantidadInput.value.trim() !== '') {
+                setTimeout(() => {
+                btnAgregarCarrito.disabled = true;
+                }, 100);
+            }
+        }
+    
+        //Se encarga de mostrar el boton para añdir las fotos 
         function setAddBtn() {
             const maxFotos = 5;
             const currentFotos = document.querySelectorAll('.producto-img').length;
@@ -345,6 +333,24 @@
                     divBoton.classList.remove('d-none');
                 }
             }
+        }
+
+        function mostrarModalModificarMensaje(id) {
+            $.ajax({
+                url: '/modificarMensaje/' + id,
+                method: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    console.log(response);
+                    $('#formModificarMensaje #agregar_mensaje_contenido').val(response.contenido);
+                    console.log(response.nombre);
+                    $('#formModificarMensaje').attr('action', '/modificarMensaje/' + id);
+                    $('#modalModificarMensaje').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
         }
 
         function setCarruselBtns() {
@@ -371,6 +377,28 @@
             } else if (carouselFotos.length > 0) { // En caso de que el índice no exista, activar el primero si hay elementos
                 carouselFotos[0].classList.add('active');
             }
+        }
+
+        function updateTrashIcons() {
+            var fotos = document.querySelectorAll('.producto-img');
+            var usuarioRol = "{{ usuario ? usuario.rol : 'Invitado' }}"
+
+            fotos.forEach((foto, index) => {
+                const parent = foto.parentElement;
+                let trashIcon = parent.querySelector('.papelera');
+
+                if (usuarioRol === "Administrador" && fotos.length > 1) {
+                    if (!trashIcon) {
+                        trashIcon = document.createElement('i');
+                        trashIcon.classList.add('fa-solid', 'fa-trash', 'papelera');
+                        trashIcon.setAttribute('data-idFoto', foto.dataset.idFoto);
+                        trashIcon.setAttribute('onclick', `borrarFoto(this, ${index})`);
+                        parent.appendChild(trashIcon);
+                    }
+                } else if (trashIcon) {
+                    trashIcon.remove();
+                }
+            });
         }
 
         function borrarFoto(element, index) {
@@ -413,7 +441,8 @@
                         });
 
                         setAddBtn();
-                        setCarruselBtns()
+                        setCarruselBtns();
+                        updateTrashIcons();
                     } else {
                         alert('Error al eliminar la imagen');
                     }
@@ -424,8 +453,19 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            //Mostrar un mensaje en caso de que lo haya
+            const toastLiveExample = document.getElementById('mensaje')
+            var mensaje = {{ mensaje|json_encode|raw }};
+            if (mensaje) {
+                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
+                toastBootstrap.show();
+            }
+
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
             setAddBtn();
-            setCarruselBtns()
+            setCarruselBtns();
 
             document.querySelectorAll('.producto-img').forEach((ProdImg, index) => {
                 ProdImg.addEventListener('click', () => {
@@ -489,7 +529,8 @@
                                 nuevoDivCarrusel.classList.add('active');
 
                                 setAddBtn();
-                                setCarruselBtns()
+                                setCarruselBtns();
+                                updateTrashIcons(); 
                             } else {
                                 alert('Error al subir la imagen');
                             }

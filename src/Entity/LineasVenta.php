@@ -26,9 +26,9 @@ class LineasVenta
     #[ORM\JoinColumn(nullable: false)]
     private ?Producto $producto = null;
 
-    #[ORM\ManyToOne(inversedBy: 'lineasVentas')]
+    #[ORM\ManyToOne(targetEntity: Pedido::class, inversedBy: 'lineasVentas')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Pedido $Pedido = null;
+    private ?Pedido $pedido = null;
 
     public function getId(): ?int
     {
@@ -43,7 +43,6 @@ class LineasVenta
     public function setCantidad(float $cantidad): static
     {
         $this->cantidad = $cantidad;
-
         return $this;
     }
 
@@ -55,7 +54,6 @@ class LineasVenta
     public function setDescuento(?float $descuento): static
     {
         $this->descuento = $descuento;
-
         return $this;
     }
 
@@ -67,7 +65,6 @@ class LineasVenta
     public function setTotal(float $total): static
     {
         $this->total = $total;
-
         return $this;
     }
 
@@ -79,19 +76,17 @@ class LineasVenta
     public function setProducto(?Producto $producto): static
     {
         $this->producto = $producto;
-
         return $this;
     }
 
     public function getPedido(): ?Pedido
     {
-        return $this->Pedido;
+        return $this->pedido;
     }
 
-    public function setPedido(?Pedido $Pedido): static
+    public function setPedido(?Pedido $pedido): static
     {
-        $this->Pedido = $Pedido;
-
+        $this->pedido = $pedido;
         return $this;
     }
 }

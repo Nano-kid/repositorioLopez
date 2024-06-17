@@ -1,0 +1,86 @@
+<style>
+    header {
+        text-align: center;
+        padding: 1% 2%;
+        padding-bottom: 1%;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .img-usuario{
+        height:30px; 
+        width:30px; 
+        object-fit: cover;
+    }
+
+    .logo{
+        height:60px; 
+        width:60px; 
+        object-fit: cover;
+    }
+</style>
+<header class="bg-warning">
+    <img class="logo" src="{{ asset('imagenes/logo.png') }}">
+    <h4><b>KÄNSARE</b></h4>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <a class="navbar-brand d-none d-lg-block" href="{{ path('app_producto')}}">Inicio</a>
+                    <li class="nav-item d-block d-lg-none">
+                        <a class="nav-link titulo"  href="{{ path('app_producto')}}">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#listaCategorias" data-bs-toggle="collapse" aria-expanded="false" aria-controls="listaCategorias">Categorías</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_sobreMi') }}">Sobre Mi</a>
+                    </li>
+                    {% if usuario == null %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_login') }}">Iniciar Sesion</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <p style="display: inline"><img src="{{ asset('imagenesUsuario/' ~ usuario.foto.nombre) }}" class="rounded-circle img-usuario">{{usuario.email}}</p>
+                            </a>
+                            <ul class="dropdown-menu">
+                                {% if usuario.rol == "Administrador" %}
+                                    <li><a class="dropdown-item" href="{{ path('app_agregarProducto') }}">Agregar Producto</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('app_agregarCategoria') }}">Agregar Categoria</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('app_pedidos') }}">Gestion Pedidos</a></li>
+                                {% elseif usuario.rol == "Cliente" %}
+                                    <li><a class="dropdown-item" href="{{ path('app_carrito') }}">Carrito</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('app_pedidos') }}">Mis Pedidos</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ path('app_logout') }}">Cerrar Sesion</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                </ul>
+                <form class="d-flex" role="search" action="{{ path('app_buscarProducto') }}" method="GET">
+                    <input class="form-control me-2" type="search" name="query" placeholder="Buscar" aria-label="Search">
+                    <button class="btn btn-outline-dark" type="submit">Buscar</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Sección colapsable para las categorías -->
+<div class="collapse" id="listaCategorias">
+    <div class="bg-dark p-3">
+        <h5 class="text-light text-center">Categorías</h5>
+        <div class="row mt-3">
+            {% for categoria in categorias %}
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+                    <a href="{{ path('app_categoria', {id: categoria.id}) }}" class="link-warning link-opacity-75-hover link-underline link-underline-opacity-0">{{ categoria.nombre }}</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
